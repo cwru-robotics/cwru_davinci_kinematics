@@ -23,6 +23,8 @@ add_definitions(${EIGEN_DEFINITIONS})
 
 find_package(catkin REQUIRED COMPONENTS roscpp roslint)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -51,6 +53,9 @@ roslint_cpp()
 roslint_add_test()
 
 # TODO(rcj), convert these tests into unit testing for code verification.
+
+catkin_add_gtest(kinematics test/test_full_kinematics.cpp)
+target_link_libraries(kinematics davinci_kinematics ${catkin_LIBRARIES})
 
 #cs_add_library(davinci_joint_publisher src/davinci_joint_publisher.cpp) 
 # Executables

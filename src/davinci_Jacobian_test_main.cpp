@@ -7,6 +7,12 @@
 // compare dp_J to dp_fk
 // do analogous comparison for dphi1, dphi2, dphi3
 
+//key lines of this program (do the following to use this Jacobian):
+//    Davinci_fwd_solver davinci_fwd_solver; //instantiate a forward-kinematics solver    
+//    Jacobian = davinci_fwd_solver.compute_jacobian(q_vec1); //compute the Jacobian
+//    dp6x1 = Jacobian*dq_vec6x1; // here is the Jacobian-based approximation of incremental Cartesian pose change
+
+
 #include <cwru_davinci_kinematics/davinci_kinematics.h>
 #include <tf/LinearMath/Quaternion.h>
 #include <Eigen/Geometry> 

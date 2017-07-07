@@ -291,26 +291,37 @@ Eigen::MatrixXd Davinci_fwd_solver::compute_jacobian(const Vectorq7x1& q_vec) {
     Eigen::Vector3d vec_tip_minus_Oi_wrt_base;
     Eigen::Matrix3d R;
     Eigen::Vector3d r_tip_wrt_base = affine_gripper_wrt_base_.translation();
+    Eigen::Vector3d z_axis0 = affine_frame0_wrt_base_.linear().col(2);
     //angular Jacobian is just the z axes of each revolute joint (expressed in base frame); 
     //for prismatic joint, there is no angular contribution
-    for (int i=0;i<2;i++) {
-        R = affine_products_[i].linear();
-        z_axis = R.col(2);
+    //start from z_axis0
+        //cout<<"z_axis0"<<": "<<z_axis0.transpose()<<endl;
         //Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
-        Jacobian_.block<3,1>(3,i) = z_axis; 
-        vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products_[i].translation();
-        Jacobian_.block<3, 1>(0, i) = z_axis.cross(vec_tip_minus_Oi_wrt_base);
-    }
+        Jacobian_.block<3,1>(3,0) = z_axis0; 
+        vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_frame0_wrt_base_.translation();
+        //cout<<"vec_tip_minus_O_wrt_base: "<<vec_tip_minus_Oi_wrt_base.transpose()<<endl;
+        Jacobian_.block<3, 1>(0, 0) = z_axis0.cross(vec_tip_minus_Oi_wrt_base);    
+    //2nd joint:
+        R = affine_products_[0].linear(); //refer to previous joint's z axis
+        z_axis = R.col(2);
+        //cout<<"z_axis1: "<<z_axis.transpose()<<endl;
+        //Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
+        Jacobian_.block<3,1>(3,1) = z_axis; 
+        vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products_[0].translation();
+        //cout<<"vec_tip_minus_Oi_wrt_base: "<<vec_tip_minus_Oi_wrt_base.transpose()<<endl;
+        Jacobian_.block<3, 1>(0, 1) = z_axis.cross(vec_tip_minus_Oi_wrt_base);
+
     //prismatic joint:
-         R = affine_products_[2].linear();
+         R = affine_products_[1].linear();
          z_axis = R.col(2);   
          Jacobian_.block<3, 1>(0, 2) = z_axis;
+    //joints 4-6:
     for (int i=3;i<6;i++) {
-        R = affine_products_[i].linear();
+        R = affine_products_[i-1].linear();
         z_axis = R.col(2);
         //Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
         Jacobian_.block<3,1>(3,i) = z_axis; 
-        vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products_[i].translation();  
+        vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products_[i-1].translation();  
         Jacobian_.block<3, 1>(0, i) = z_axis.cross(vec_tip_minus_Oi_wrt_base);        
     }    
     //translational Jacobian depends on joint's z-axis and vector from i'th axis to robot tip

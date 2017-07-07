@@ -59,6 +59,10 @@ target_link_libraries(kinematics davinci_kinematics ${catkin_LIBRARIES})
 
 #cs_add_library(davinci_joint_publisher src/davinci_joint_publisher.cpp) 
 # Executables
+add_executable(davinci_Jacobian_test_main src/davinci_Jacobian_test_main.cpp)
+target_link_libraries(davinci_Jacobian_test_main davinci_kinematics ${catkin_LIBRARIES})
+
+
 #cs_add_executable(test_davinci_ik src/davinci_kinematics_test_main2.cpp)
 #cs_add_executable(test_davinci_kin3 src/davinci_kinematics_test_main3.cpp)
 #cs_add_executable(test_davinci_kin4 src/davinci_kinematics_test_main4.cpp)

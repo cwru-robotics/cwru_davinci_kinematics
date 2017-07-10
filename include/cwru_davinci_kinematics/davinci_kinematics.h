@@ -7,6 +7,7 @@
 //NOTE:  FK and IK assume that the gripper-tip frame is expressed with respect
 // to the respective PMS base frame (not camera frame).  For motions w/rt camera
 //  first transform the desired camera-frame pose into base-frame pose.
+//7/5/17: adding Jacobian
 
 
 
@@ -148,6 +149,9 @@ public:
     //the following version takes args of DH thetas and d's; used by above fnc
     Eigen::Affine3d fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::VectorXd& d_vec);
     
+    //compute a Jacobian, 6x6, assuming use of first 5 joints plus angle of pt between fingertips
+    Eigen::MatrixXd compute_jacobian(const Vectorq7x1& q_vec);  
+    
     int psm1_joint_indices_from_namelist[7];
     int psm2_joint_indices_from_namelist[7];
     static bool get_jnt_val_by_name(string jnt_name,sensor_msgs::JointState jointState,double &qval);
@@ -166,7 +170,7 @@ public:
     bool fit_joints_to_range(Vectorq7x1 &qvec);
     Eigen::Vector3d q123_from_wrist(Eigen::Vector3d wrist_pt);
     Eigen::Vector3d compute_fk_wrist(Eigen::Vector3d q123);
-    int compute_q456(Eigen::Vector3d q123,Eigen::Vector3d z_vec4,Eigen::Affine3d desired_hand_pose);
+    void compute_q456(Eigen::Vector3d q123,Eigen::Vector3d z_vec4,Eigen::Affine3d desired_hand_pose);
     //Eigen::Vector3d compute_w_from_tip(Eigen::Affine3d affine_gripper_tip, Eigen::Vector3d &zvec_4);
     Eigen::Vector3d compute_w_from_tip(Eigen::Affine3d affine_gripper_tip, Eigen::Vector3d &zvec_4,
         Eigen::Vector3d &alt_O4);

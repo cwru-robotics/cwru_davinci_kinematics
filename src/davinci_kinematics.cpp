@@ -213,7 +213,7 @@ Davinci_fwd_solver::Davinci_fwd_solver() {
    R_0_wrt_base.col(0) = x_axis;
    R_0_wrt_base.col(1) = y_axis;
    R_0_wrt_base.col(2) = z_axis;   
-   affine_frame0_wrt_base_; //member variable
+   //affine_frame0_wrt_base_; //member variable
    affine_frame0_wrt_base_.linear() = R_0_wrt_base;
    affine_frame0_wrt_base_.translation() = Origin_0_wrt_base;      
 
@@ -229,6 +229,9 @@ Davinci_fwd_solver::Davinci_fwd_solver() {
    dval_DH_offsets_.resize(7);
    dval_DH_offsets_<<0,0,DH_q_offsets[2],0,0,0,0;
    
+   //resize MatrixXd Jacobian_ and initialize terms to 0's
+   Jacobian_ = Eigen::MatrixXd::Zero(6,6); //mat6x6;
+
 }
 
 //provide DH theta and d values, return affine pose of gripper tip w/rt base frame
@@ -280,6 +283,50 @@ Eigen::Affine3d Davinci_fwd_solver::fwd_kin_solve(const Vectorq7x1& q_vec) {
     //cout<<"dvals_DH: "<<dvals_DH_vec_.transpose()<<endl;
     affine_gripper_wrt_base_ = fwd_kin_solve_DH(thetas_DH_vec_, dvals_DH_vec_);     
     return affine_gripper_wrt_base_;
+}
+
+Eigen::MatrixXd Davinci_fwd_solver::compute_jacobian(const Vectorq7x1& q_vec) {
+    fwd_kin_solve(q_vec);
+    Eigen::Vector3d z_axis;
+    Eigen::Vector3d vec_tip_minus_Oi_wrt_base;
+    Eigen::Matrix3d R;
+    Eigen::Vector3d r_tip_wrt_base = affine_gripper_wrt_base_.translation();
+    Eigen::Vector3d z_axis0 = affine_frame0_wrt_base_.linear().col(2);
+    //angular Jacobian is just the z axes of each revolute joint (expressed in base frame); 
+    //for prismatic joint, there is no angular contribution
+    //start from z_axis0
+        //cout<<"z_axis0"<<": "<<z_axis0.transpose()<<endl;
+        //Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
+        Jacobian_.block<3,1>(3,0) = z_axis0; 
+        vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_frame0_wrt_base_.translation();
+        //cout<<"vec_tip_minus_O_wrt_base: "<<vec_tip_minus_Oi_wrt_base.transpose()<<endl;
+        Jacobian_.block<3, 1>(0, 0) = z_axis0.cross(vec_tip_minus_Oi_wrt_base);    
+    //2nd joint:
+        R = affine_products_[0].linear(); //refer to previous joint's z axis
+        z_axis = R.col(2);
+        //cout<<"z_axis1: "<<z_axis.transpose()<<endl;
+        //Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
+        Jacobian_.block<3,1>(3,1) = z_axis; 
+        vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products_[0].translation();
+        //cout<<"vec_tip_minus_Oi_wrt_base: "<<vec_tip_minus_Oi_wrt_base.transpose()<<endl;
+        Jacobian_.block<3, 1>(0, 1) = z_axis.cross(vec_tip_minus_Oi_wrt_base);
+
+    //prismatic joint:
+         R = affine_products_[1].linear();
+         z_axis = R.col(2);   
+         Jacobian_.block<3, 1>(0, 2) = z_axis;
+    //joints 4-6:
+    for (int i=3;i<6;i++) {
+        R = affine_products_[i-1].linear();
+        z_axis = R.col(2);
+        //Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
+        Jacobian_.block<3,1>(3,i) = z_axis; 
+        vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products_[i-1].translation();  
+        Jacobian_.block<3, 1>(0, i) = z_axis.cross(vec_tip_minus_Oi_wrt_base);        
+    }    
+    //translational Jacobian depends on joint's z-axis and vector from i'th axis to robot tip
+    
+    return Jacobian_;
 }
 
 //gen_rand_legal_jnt_vals: compute random values within legal joint range:
@@ -408,8 +455,8 @@ Eigen::Vector3d Davinci_IK_solver::compute_w_from_tip(Eigen::Affine3d affine_gri
   O_tip = affine_gripper_tip.translation();
   origin_4a = origin_5-dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*xvec_5;
   origin_4b = origin_5+dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*xvec_5;
-  double dist_O4a_gripper_tip = (O_tip-origin_4a).norm();
-  double dist_O4b_gripper_tip = (O_tip-origin_4b).norm();
+  //double dist_O4a_gripper_tip = (O_tip-origin_4a).norm();
+  //double dist_O4b_gripper_tip = (O_tip-origin_4b).norm();
   //if(debug_print) cout<<"dist_O4a_gripper_tip="<<dist_O4a_gripper_tip<<"; dist_O4b_gripper_tip="<<dist_O4b_gripper_tip<<endl;
   //if ((dist_O4a_gripper_tip<min_dist_O4_to_gripper_tip_)&&(dist_O4b_gripper_tip<min_dist_O4_to_gripper_tip_)) {
   //    ROS_WARN("BOTH 04 options too close to gripper tip!");
@@ -642,8 +689,8 @@ Eigen::Vector3d Davinci_IK_solver::compute_fk_wrist(Eigen::Vector3d q123)
    return wrist_pt;
 }
 
-//populates q_vec_soln_; rtns 0 if not legal solns
-int Davinci_IK_solver::compute_q456(Eigen::Vector3d q123,Eigen::Vector3d z_vec4,Eigen::Affine3d desired_hand_pose)
+//populates q_vec_soln_; rtns 0 if no legal solns
+void Davinci_IK_solver::compute_q456(Eigen::Vector3d q123,Eigen::Vector3d z_vec4,Eigen::Affine3d desired_hand_pose)
 {
    Eigen::Affine3d affine_frame_wrt_base,affine_frame6_wrt_4,affine_frame6_wrt_5,fk_gripper_frame;
    Eigen::Vector3d z4_wrt_3,O_6_wrt_4,xvec6_wrt_5;
@@ -712,6 +759,6 @@ int Davinci_IK_solver::compute_q456(Eigen::Vector3d q123,Eigen::Vector3d z_vec4,
    //cout<<"R:"<<endl;
    //cout<<fk_gripper_frame.linear()<<endl;
    
-   // pack the solution in to a single vector
+   // pack the solution into a single vector
    q_vec_soln_ =  convert_DH_vecs_to_qvec(theta_vec, d_vec);
    }

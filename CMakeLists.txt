@@ -49,16 +49,17 @@ target_link_libraries(davinci_kinematics ${catkin_LIBRARIES})
 roslint_cpp()
 
 # Test lists:
-
-roslint_add_test()
-
 # TODO(rcj), convert these tests into unit testing for code verification.
-
-catkin_add_gtest(kinematics test/test_full_kinematics.cpp)
-target_link_libraries(kinematics davinci_kinematics ${catkin_LIBRARIES})
+#roslint_add_test()
+#catkin_add_gtest(kinematics test/test_full_kinematics.cpp)
+#target_link_libraries(kinematics davinci_kinematics ${catkin_LIBRARIES})
 
 #cs_add_library(davinci_joint_publisher src/davinci_joint_publisher.cpp) 
 # Executables
+add_executable(davinci_Jacobian_test_main src/davinci_Jacobian_test_main.cpp)
+target_link_libraries(davinci_Jacobian_test_main davinci_kinematics ${catkin_LIBRARIES})
+
+
 #cs_add_executable(test_davinci_ik src/davinci_kinematics_test_main2.cpp)
 #cs_add_executable(test_davinci_kin3 src/davinci_kinematics_test_main3.cpp)
 #cs_add_executable(test_davinci_kin4 src/davinci_kinematics_test_main4.cpp)

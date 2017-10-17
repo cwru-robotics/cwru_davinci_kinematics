@@ -9,19 +9,19 @@ if(NOT EIGEN3_FOUND)
   # Fallback to cmake_modules
   find_package(cmake_modules REQUIRED)
   find_package(Eigen REQUIRED)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIR})
-  set(EIGEN_DEP Eigen)
+  set(Eigen3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIR})
+  set(Eigen3_DEP Eigen)
   # message("Found Eigen ${EIGEN_INCLUDE_DIR}")
   # Possibly map additional variables to the EIGEN3_ prefix.
 else()
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-  set(EIGEN_DEP Eigen3)
+  set(Eigen3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+  set(Eigen3_DEP Eigen3)
   # message("Found Eigen3 ${EIGEN3_INCLUDE_DIR}")
 endif()
 
 add_definitions(${EIGEN_DEFINITIONS})
 
-find_package(catkin REQUIRED COMPONENTS roscpp roslint)
+find_package(catkin REQUIRED COMPONENTS roscpp roslint tf tf2)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
@@ -29,48 +29,70 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${catkin_INCLUDES}
-  ${EIGEN3_INCLUDE_DIRS}
+  ${Eigen3_INCLUDE_DIRS}
 )
 
 catkin_package(
-	DEPENDS ${EIGEN_DEP}
+	DEPENDS ${Eigen3_DEP}
 	LIBRARIES davinci_kinematics
 	CATKIN_DEPENDS roscpp
 	INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
 )
 
+
 # Libraries
-add_library(davinci_kinematics src/davinci_kinematics.cpp)
-target_link_libraries(davinci_kinematics ${catkin_LIBRARIES})
+
+add_library(davinci_kinematics src/davinci_fwd_kinematics.cpp src/davinci_inv_kinematics.cpp)
+
+target_link_libraries(davinci_kinematics
+  ${catkin_LIBRARIES}
+  davinci_kinematic_definitions
+  )
+
+add_library(davinci_kinematic_definitions src/davinci_kinematic_definitions.cpp)
 
 
-#Ros linting:
+# Examples
 
-roslint_cpp()
+add_executable(jacobian_demo examples/davinci_jacobian_demo.cpp)
+
+target_link_libraries(jacobian_demo
+  davinci_kinematics
+  ${catkin_LIBRARIES}
+)
+
+add_executable(forward_demo examples/davinci_fwd_kinematics_demo.cpp)
+
+target_link_libraries(forward_demo
+  davinci_kinematics
+  davinci_kinematic_definitions
+  ${catkin_LIBRARIES}
+)
+
+add_executable(ik_demo examples/davinci_inv_kinematics_demo.cpp)
+
+target_link_libraries(ik_demo
+  davinci_kinematics
+  davinci_kinematic_definitions
+  ${catkin_LIBRARIES}
+)
+
+
+file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)
+file(GLOB_RECURSE TEST_FILES_CPP test/*.cpp)
+file(GLOB_RECURSE INCLUDE_FILES_H include/*.h)
+file(GLOB_RECURSE EXAMPLE_FILES_CPP examples/*.cpp)
+roslint_cpp(${SRC_FILES_CPP} ${TEST_FILES_CPP} ${INCLUDE_FILES_H} ${EXAMPLE_FILES_CPP})
+
 
 # Test lists:
 # TODO(rcj), convert these tests into unit testing for code verification.
-#roslint_add_test()
-#catkin_add_gtest(kinematics test/test_full_kinematics.cpp)
-#target_link_libraries(kinematics davinci_kinematics ${catkin_LIBRARIES})
 
-#cs_add_library(davinci_joint_publisher src/davinci_joint_publisher.cpp) 
-# Executables
-add_executable(davinci_Jacobian_test_main src/davinci_Jacobian_test_main.cpp)
-target_link_libraries(davinci_Jacobian_test_main davinci_kinematics ${catkin_LIBRARIES})
+roslint_add_test()
 
-
-#cs_add_executable(test_davinci_ik src/davinci_kinematics_test_main2.cpp)
-#cs_add_executable(test_davinci_kin3 src/davinci_kinematics_test_main3.cpp)
-#cs_add_executable(test_davinci_kin4 src/davinci_kinematics_test_main4.cpp)
-#cs_add_executable(test_davinci_joint_pub src/davinci_joint_publisher_test_main.cpp)
-#cs_add_executable(test_pointer src/test_pointer.cpp)
-#cs_add_executable(davinci_cart_traj_pub src/davinci_cart_traj_pub.cpp)
-#cs_add_executable(davinci_playfile_jointspace src/davinci_playfile_jointspace.cpp)
-#target_link_libraries(test_davinci_ik davinci_kinematics ${catkin_LIBRARIES})
-#target_link_libraries(test_davinci_kin3 davinci_kinematics ${catkin_LIBRARIES})
-#target_link_libraries(test_davinci_kin4 davinci_kinematics ${catkin_LIBRARIES})
-#target_link_libraries(test_davinci_joint_pub davinci_joint_publisher ${catkin_LIBRARIES})
-#target_link_libraries(davinci_cart_traj_pub davinci_joint_publisher davinci_kinematics ${catkin_LIBRARIES})
-#target_link_libraries(davinci_playfile_jointspace davinci_joint_publisher davinci_kinematics ${catkin_LIBRARIES})
-#target_link_libraries(test_pointer davinci_joint_publisher davinci_kinematics ${catkin_LIBRARIES})
+catkin_add_gtest(full_kinematics_test test/full_kinematics.cpp)
+target_link_libraries(full_kinematics_test
+  davinci_kinematics
+  davinci_kinematic_definitions
+  ${catkin_LIBRARIES}
+)

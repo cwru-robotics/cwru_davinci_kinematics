@@ -57,7 +57,7 @@ public:
 
   static bool get_jnt_val_by_name(std::string jnt_name, sensor_msgs::JointState jointState, double &qval);
 
-  // @TODO: replace the dependence on these functions with the tf_eigen library.
+  // TODO(rcj): replace the dependence on these functions with the tf_eigen library.
   // http://docs.ros.org/jade/api/tf_conversions/html/c++/tf__eigen_8h.html
   static Eigen::Affine3f transformTFToEigen(const tf::Transform &t);
   static Eigen::Affine3f stampedTFToEigen(const tf::StampedTransform &t);

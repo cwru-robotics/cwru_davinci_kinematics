@@ -35,7 +35,7 @@ TEST(davinci_kinematics, Full_Kinematics_KI)
   davinci_kinematics::Forward dvrk_forward;
   davinci_kinematics::Inverse dvrk_inverse;
 
-  for (int i(0); i < 500; i++)
+  for (int i(0); i < 5000; i++)
   {
     dvrk_forward.gen_rand_legal_jnt_vals(q_vec);
 

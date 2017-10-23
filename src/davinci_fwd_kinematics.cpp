@@ -30,6 +30,8 @@ bool Forward::get_jnt_val_by_name(std::string jnt_name, sensor_msgs::JointState 
   return false;
 }
 
+// TODO(rcj, wsn) replace the below utilities with tf2_eigen declared functions
+
 // some utilities to convert data types:
 Eigen::Affine3f  Forward::transformTFToEigen(const tf::Transform &t)
 {
@@ -164,6 +166,12 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec)
 
   dvals_DH_vec_(2)+=q_vec(2);
 }
+
+double Forward::dh_var_to_qvec(double dh_val, int index)
+{
+  return (dh_val - DH_q_offsets[index]);
+}
+
 //    Eigen::VectorXd thetas_DH_vec_,dvals_DH_vec_;
 Vectorq7x1 Forward::convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec,
   const Eigen::VectorXd &dvals_DH_vec)
@@ -184,7 +192,7 @@ Eigen::Affine3d Forward::computeAffineOfDH(double a, double d, double alpha, dou
   Eigen::Matrix3d R;
   Eigen::Vector3d p;
 
-  // @TODO(rcj) erdem IK bug #1: initialize 0 values in R matrix explicitly otherwise causes numerical issues
+  // TODO(rcj) erdem IK bug #1: initialize 0 values in R matrix explicitly otherwise causes numerical issues
   double cq = cos(theta);
   double sq = sin(theta);
   double sa = sin(alpha);
@@ -287,7 +295,9 @@ Eigen::Affine3d Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, cons
 Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec)
 {
   convert_qvec_to_DH_vecs(q_vec);
-  return fwd_kin_solve_DH(thetas_DH_vec_, dvals_DH_vec_);
+  Eigen::Affine3d forward_x_form(fwd_kin_solve_DH(thetas_DH_vec_, dvals_DH_vec_));
+
+  return forward_x_form;
 }
 
 Eigen::Affine3d Forward::get_frame0_wrt_base() const
@@ -347,8 +357,8 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec)
 // gen_rand_legal_jnt_vals: compute random values within legal joint range:
 void Forward::gen_rand_legal_jnt_vals(Vectorq7x1 &qvec)
 {
-  double drand_val;
   qvec(6) = 0;
+  double drand_val;
   unsigned int seed = time(NULL);
   for (int i = 0; i < 6; i++)
   {

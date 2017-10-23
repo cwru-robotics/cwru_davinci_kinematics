@@ -1,14 +1,26 @@
-// @TODO Add License Text.
-// Copyright Wyatt S. Newman 2015 and Russell Jackson 2017
+/*
+ *  davinci_inv_kinematics.cpp
+ *  Copyright (C) 2017  Wyatt S. Newman, Russell C. Jackson, and Tom Shkurti.
 
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cwru_davinci_kinematics/davinci_inv_kinematics.h>
 #include <sensor_msgs/JointState.h>
 #include <math.h>
 #include <string>
 #include <vector>
-
-// #define VERBOSE
 
 /**
  * TODO(wsn) There are alot of questions and queries in the the comments.
@@ -19,8 +31,7 @@ namespace davinci_kinematics
 
 Inverse::Inverse() : Forward()
 {
-  min_dist_O4_to_gripper_tip_ = sqrt(gripper_jaw_length*gripper_jaw_length
-    + dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis);
+  // Blank constructor.
 }
 
 Eigen::Vector3d Inverse::q123_from_wrist(Eigen::Vector3d wrist_pt)
@@ -36,9 +47,8 @@ Eigen::Vector3d Inverse::q123_from_wrist(Eigen::Vector3d wrist_pt)
   // displacement along z0 axis depends on tool-insertion length, d3, and on rotation of pitch mechanism, theta2
   // note that theta2 is pi/2 + q_davinci(1);
   // if range of q_davinci is +/- pi/2, then range of theta2 is 0 to +pi
-  Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
+
   Eigen::Vector3d w_prime = wrist_pt / d3;
-  w_prime = affine_frame0_wrt_base.inverse() * w_prime;
 
   // arc cosine of x, in the interval [0,pi] radians...which is interval of interest for theta2, so keep this soln
   double theta2;
@@ -74,7 +84,8 @@ void Inverse::compute_w_from_tip(Eigen::Affine3d affine_gripper_tip,
   // by definition of tip frame
   // equation (1) from [1]
   zvec_5 = -xvec_tip_frame;
-  origin_5 = affine_gripper_tip.translation() - gripper_jaw_length*zvec_tip_frame;
+
+  origin_5 = affine_gripper_tip.translation() - this->get_gripper_jaw_length()*zvec_tip_frame;
 
   // consider these two planes:
   // define vector z_perp, which is the same a z5
@@ -91,7 +102,6 @@ void Inverse::compute_w_from_tip(Eigen::Affine3d affine_gripper_tip,
   // to resolve the sign ambiguity, consider two O4 candidates: O4a = O5-dist*intersect_vec,
   // and O4b = O5+dist*intersect_vec
   // the correct solution is the point that is CLOSEST to the origin O_0
-  // TODO(rcj, wsn) Add this test....
   // TODO(rcj, wsn) All of these ambiguitities cause problems. Can we decisively remove them?
   // plane P_perp is perpendicular to z_perp and contains O5
   // plane P_parallel is perpendicular to z_parallel and contains O5, base origin, and z_perp
@@ -117,7 +127,6 @@ void Inverse::compute_w_from_tip(Eigen::Affine3d affine_gripper_tip,
 
   sol_O4a = origin_5 - dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*xvec_5;
   sol_O4b = origin_5 + dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*xvec_5;
-
 
   // possible error here: need to get sign of xvec_5 correct.
   // given O_4 and O_5, should have xvec_5 point from O_4 towards O_5
@@ -192,12 +201,14 @@ bool Inverse::fit_joints_to_range(Vectorq7x1 &qvec)
 
 int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
 {
+  // before doing anything else, premultiply to get everything in terms of the base.
+  Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
+  desired_hand_pose_ = affine_frame0_wrt_base.inverse() * desired_hand_pose;
+  // desired_hand_pose_ = desired_hand_pose;
+
   Eigen::Vector3d z4_wrt_3, O_6_wrt_4, xvec6_wrt_5, O_5_wrt_base, zvec5_wrt_base;
-
   Eigen::Vector3d des_tip_origin, zvec_tip_wrt_base;
-
   Eigen::VectorXd theta_vec, d_vec;
-
   Eigen::Matrix3d R_tip_wrt_base;
 
   q_vec_soln_(0) = -10.0;
@@ -210,8 +221,8 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
 
   // TODO(rcj, wsn) Look through these error codes as some legal joint definitions may result in constraint violations.
   // TODO(wsn, rcj) add the error definitions to the readme.
-  des_tip_origin = desired_hand_pose.translation();
-  double tool_tip_z_des = des_tip_origin(2);
+  // des_tip_origin = desired_hand_pose_.translation();
+  // double tool_tip_z_des = des_tip_origin(2);
   // TODO(rcj) I propose removing this condition from inv kinematics OR adding it to fwd kinematics.
   /*if (tool_tip_z_des > 0.0)
   {
@@ -222,7 +233,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     return -1;
   }*/
 
-  R_tip_wrt_base = desired_hand_pose.linear();
+  R_tip_wrt_base = desired_hand_pose_.linear();
   zvec_tip_wrt_base = R_tip_wrt_base.col(2);
   O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base * gripper_jaw_length;
   // This should be 0.00
@@ -267,7 +278,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
   // TODO(rcj, wsn) If possible resolve the ambiguity in compute_w_from_tip.
   Eigen::Vector3d w_wrt_base[2];
   Eigen::Vector3d z_vec4[2];
-  compute_w_from_tip(desired_hand_pose, z_vec4[0], z_vec4[1], w_wrt_base[0], w_wrt_base[1]);
+  compute_w_from_tip(desired_hand_pose_, z_vec4[0], z_vec4[1], w_wrt_base[0], w_wrt_base[1]);
 
   // next step: get theta1, theta2, d3 soln from wrist position:
 
@@ -282,16 +293,16 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     int index_1(index % 2);
 
     Eigen::Vector3d q123(q123_from_wrist(w_wrt_base[index_1]));
-    Vectorq7x1 q_sol_p = compute_q456(q123, z_vec4[index_2], desired_hand_pose);
+    Vectorq7x1 q_sol_p = compute_q456(q123, z_vec4[index_2]);
 
     if (fit_joints_to_range(q_sol_p))
     {
       q_sol.push_back(q_sol_p);
       // compute the numerical errors.
       Eigen::Affine3d affine_test_fk = fwd_kin_solve(q_sol_p);
-      Eigen::Matrix3d fwd_inv = affine_test_fk.rotation() * desired_hand_pose.rotation().inverse();
+      Eigen::Matrix3d fwd_inv = affine_test_fk.rotation() * desired_hand_pose_.rotation().inverse();
       Eigen::Quaterniond fwd_inv_q(fwd_inv);
-      err_l.push_back((affine_test_fk.translation() - desired_hand_pose.translation()).norm());
+      err_l.push_back((affine_test_fk.translation() - desired_hand_pose_.translation()).norm());
       err_r.push_back(acos(fwd_inv_q.w()) * 2);
     }
     else
@@ -304,17 +315,6 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
   {
     case 0:
     {
-    #ifdef VERBOSE
-      std::cout << "There are NO solutions\n";
-      std::cout << std::endl;
-      for (int index(0); index < q_fail.size(); index++)
-      {
-        std::cout << q_fail[index] << "\n\n";
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
-      std::cout << std::endl;
-      #endif
     }
     return -6;
 
@@ -330,7 +330,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     {
       std::cout << "There are multiple solutions\n";
 
-      for (int index(0); index < q_sol.size(); index++)
+      for (unsigned int index(0); index < q_sol.size(); index++)
       {
         printf("Solution %d has errors of <%f, %f> and is: \n", index, err_l[index], err_r[index]);
         std::cout << q_sol[index] << "\n\n";
@@ -365,11 +365,14 @@ Eigen::Vector3d Inverse::compute_fk_wrist(Eigen::Vector3d q123)
   return wrist_pt;
 }
 
-Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4, Eigen::Affine3d desired_hand_pose)
+Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
 {
   Eigen::Affine3d affine_frame_wrt_base, affine_frame6_wrt_4, affine_frame6_wrt_5, fk_gripper_frame;
   Eigen::Vector3d z4_wrt_3, O_6_wrt_4, xvec6_wrt_5;
   Eigen::VectorXd theta_vec, d_vec;
+
+  // Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
+  // Eigen::Affine3d affine_base_wrt_frame0 = affine_frame0_wrt_base.inverse();
 
   theta_vec.resize(7);
   theta_vec << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
@@ -407,7 +410,7 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4, E
   // A_{g/base} = A_{4/base}*A_{6/4}*A_{g/6}
   // so, A_{4/base}_inv * A_{g/base} * A_{g/6}_inv = A_{4/base}
   Eigen::Affine3d affine_gripper_wrt_frame6 = this->get_gripper_wrt_frame6();
-  affine_frame6_wrt_4 = affine_frame_wrt_base.inverse() * desired_hand_pose*affine_gripper_wrt_frame6.inverse();
+  affine_frame6_wrt_4 = affine_frame_wrt_base.inverse() * desired_hand_pose_*affine_gripper_wrt_frame6.inverse();
   O_6_wrt_4 = affine_frame6_wrt_4.translation();
   double theta5 =  atan2(O_6_wrt_4(1), O_6_wrt_4(0));
 
@@ -416,7 +419,7 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4, E
   fwd_kin_solve_DH(theta_vec, d_vec);
   // get frame 5, which depends on 1st 5 vars:
   affine_frame_wrt_base = get_affine_frame(4);
-  affine_frame6_wrt_5 = affine_frame_wrt_base.inverse() * desired_hand_pose * affine_gripper_wrt_frame6.inverse();
+  affine_frame6_wrt_5 = affine_frame_wrt_base.inverse() * desired_hand_pose_ * affine_gripper_wrt_frame6.inverse();
 
   xvec6_wrt_5 = affine_frame6_wrt_5.linear().col(0);
   double theta6 = atan2(xvec6_wrt_5(1), xvec6_wrt_5(0));

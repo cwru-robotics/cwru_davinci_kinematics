@@ -1,5 +1,20 @@
-// @TODO Add License Text.
-// Copyright Wyatt S. Newman 2015 and Russell Jackson 2017
+/*
+ *  davinci_kinematic_definitions.h
+ *  Copyright (C) 2017  Wyatt S. Newman, Russell C. Jackson, and Tom Shkurti.
+
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cwru_davinci_kinematics/davinci_kinematic_definitions.h>
 #include <math.h>
@@ -44,12 +59,13 @@ const double DH_alpha6 = M_PI/2.0;
 // relevant only if treat jaws as separate links
 const double DH_alpha7 = 0.0;
 
+// the long and short distance from the portal to the exit of the cannula.
+const double cannula_long_length = .078;
+const double cannula_short_length = .035;
 
 // q_Davinci vec: starts counting from 0; 0 displacement at model "home"
 // when model joint_states are all at displacement 0.0
 // use these offsets to convert to DH coords
-// @TODO(wsn) remove ambiguous comments about the limits
-
 // must command this much displacement to get wrist-bend axis to intersect base origin
 const double insertion_offset = 0.0156;
 
@@ -66,7 +82,6 @@ const double DH_q_offset6 = 0.0;
 
 const double deg2rad = M_PI/180.0;
 
-// @TODO(wsn) validate these and get rid of ambiguous comments:
 
 // deg2rad*45; //141; //51;
 const double DH_q_max0 = 1.0;
@@ -82,9 +97,6 @@ const double DH_q_max4 = 1.57;
 const double DH_q_max5 = 1.39;
 // deg2rad*90;
 const double DH_q_max6 = 1.57;
-
-// @TODO(wsn) Get rid of the constant notes.
-// -141, -123, -173.5, -3, -175.25, -90, -175.25
 
 // -deg2rad*45; //51; //141;
 const double DH_q_min0 = -1.0;

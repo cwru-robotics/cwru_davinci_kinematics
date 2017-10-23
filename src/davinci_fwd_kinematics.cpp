@@ -1,5 +1,20 @@
-// @TODO Add License Text.
-// Copyright Wyatt S. Newman 2015 and Russell Jackson 2017
+/*
+ *  davinci_fwd_kinematics.cpp
+ *  Copyright (C) 2017  Wyatt S. Newman, Russell C. Jackson, and Tom Shkurti.
+
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <math.h>
 #include <string>
@@ -30,141 +45,58 @@ bool Forward::get_jnt_val_by_name(std::string jnt_name, sensor_msgs::JointState 
   return false;
 }
 
-// TODO(rcj, wsn) replace the below utilities with tf2_eigen declared functions
-
-// some utilities to convert data types:
-Eigen::Affine3f  Forward::transformTFToEigen(const tf::Transform &t)
-{
-  Eigen::Affine3f e;
-  for (int i = 0; i < 3; i++)
-  {
-    e.matrix()(i, 3) = t.getOrigin()[i];
-    for (int j = 0; j < 3; j++)
-    {
-      e.matrix()(i, j) = t.getBasis()[i][j];
-    }
-  }
-  // Fill in identity in last row
-  for (int col = 0; col < 3; col++)
-    e.matrix()(3, col) = 0;
-
-  e.matrix()(3, 3) = 1;
-  return e;
-}
-
-// as above, but double instead of float
-Eigen::Affine3d Forward::transformTFToAffine3d(const tf::Transform &t)
-{
-  Eigen::Affine3d e;
-  for (int i = 0; i < 3; i++)
-  {
-    e.matrix()(i, 3) = t.getOrigin()[i];
-    for (int j = 0; j < 3; j++)
-    {
-      e.matrix()(i, j) = t.getBasis()[i][j];
-    }
-  }
-  // Fill in identity in last row
-  for (int col = 0; col < 3; col++)
-    e.matrix()(3, col) = 0;
-
-  e.matrix()(3, 3) = 1;
-  return e;
-}
-
-// versions for stamped transforms
-Eigen::Affine3d Forward::stampedTFToAffine3d(const tf::StampedTransform &t)
-{
-  tf::Vector3 tf_Origin = t.getOrigin();
-  tf::Matrix3x3 tf_R = t.getBasis();
-
-  tf::Transform tf_temp;
-  tf_temp.setBasis(tf_R);
-  tf_temp.setOrigin(tf_Origin);
-  Eigen::Affine3d e;
-  e = transformTFToAffine3d(tf_temp);
-  return e;
-}
-
-
-Eigen::Affine3f  Forward::stampedTFToEigen(const tf::StampedTransform &t)
-{
-  tf::Vector3 tf_Origin = t.getOrigin();
-  tf::Matrix3x3 tf_R = t.getBasis();
-
-  tf::Transform tf_temp;
-  tf_temp.setBasis(tf_R);
-  tf_temp.setOrigin(tf_Origin);
-  Eigen::Affine3f e;
-  e = transformTFToEigen(tf_temp);
-  return e;
-}
-
-// and go the other direction:
-geometry_msgs::Pose Forward::transformEigenAffine3fToPose(Eigen::Affine3f e)
-{
-  Eigen::Vector3f Oe;
-  Eigen::Matrix3f Re;
-  geometry_msgs::Pose pose;
-  Oe = e.translation();
-  Re = e.linear();
-
-  // convert rotation matrix Re to a quaternion, q
-  Eigen::Quaternionf q(Re);
-  pose.position.x = Oe(0);
-  pose.position.y = Oe(1);
-  pose.position.z = Oe(2);
-
-  pose.orientation.x = q.x();
-  pose.orientation.y = q.y();
-  pose.orientation.z = q.z();
-  pose.orientation.w = q.w();
-  return pose;
-}
-
-geometry_msgs::Pose Forward::transformEigenAffine3dToPose(Eigen::Affine3d e)
-{
-  Eigen::Vector3d Oe;
-  Eigen::Matrix3d Re;
-  geometry_msgs::Pose pose;
-  Oe = e.translation();
-  Re = e.linear();
-
-  // convert rotation matrix Re to a quaternion, q
-  Eigen::Quaterniond q(Re);
-  pose.position.x = Oe(0);
-  pose.position.y = Oe(1);
-  pose.position.z = Oe(2);
-
-  pose.orientation.x = q.x();
-  pose.orientation.y = q.y();
-  pose.orientation.z = q.z();
-  pose.orientation.w = q.w();
-  return pose;
-}
-
 // given a vector of joint states in DaVinci coords, convert these into
 // equivalent DH parameters, theta and d
-void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec)
+void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec, Eigen::VectorXd &thetas_DH_vec,
+  Eigen::VectorXd &dvals_DH_vec)
 {
-  thetas_DH_vec_.resize(7);
+  thetas_DH_vec.resize(7);
   // +? -?
-  thetas_DH_vec_ = theta_DH_offsets_;
-  for (int i = 0; i < 2; i++)
+  thetas_DH_vec = theta_DH_offsets_;
+  for (int i = 0; i < 7; i++)
   {
-    thetas_DH_vec_(i)+= q_vec(i);
+    // skip the linear joint.
+    if (i == 2) continue;
+    thetas_DH_vec(i)+= q_vec(i);
   }
 
-  for (int i = 3; i < 7; i++)
+  dvals_DH_vec.resize(7);
+  dvals_DH_vec = dval_DH_offsets_;
+  dvals_DH_vec(2) += q_vec(2);
+}
+
+int Forward::check_jnts(const Vectorq7x1& q_vec)
+{
+  int result(0);
+  for (int i(0); i < 6; i++)
   {
-    thetas_DH_vec_(i)+= q_vec(i);
+    if (q_vec(i) < q_lower_limits[i] || q_vec(i) > q_upper_limits[i])
+    {
+      result -= (1 << i);
+    }
   }
-  dvals_DH_vec_.resize(7);
-
-  // +? -?
-  dvals_DH_vec_ = dval_DH_offsets_;
-
-  dvals_DH_vec_(2)+=q_vec(2);
+  if (result < 0)
+  {
+    return result;
+  }
+  // The wrist is inside the cannula.
+  if (q_vec(2) < cannula_short_length)
+  {
+    // if the wrist is straight, then it is ok.
+    for (unsigned int i(3); i < 6; i++)
+    {
+      if (abs(q_vec(i)) > 0.001)
+      {
+        return 1;
+      }
+    }
+  }
+  // Test if the gripper is open wider than available.
+  if (abs(q_vec(6)) > (M_PI -abs(q_vec(5))))
+  {
+    return 2;
+  }
+  return 0;
 }
 
 double Forward::dh_var_to_qvec(double dh_val, int index)
@@ -192,7 +124,6 @@ Eigen::Affine3d Forward::computeAffineOfDH(double a, double d, double alpha, dou
   Eigen::Matrix3d R;
   Eigen::Vector3d p;
 
-  // TODO(rcj) erdem IK bug #1: initialize 0 values in R matrix explicitly otherwise causes numerical issues
   double cq = cos(theta);
   double sq = sin(theta);
   double sa = sin(alpha);
@@ -247,7 +178,7 @@ Forward::Forward()
   affine_frame0_wrt_base_.translation() = Origin_0_wrt_base;
 
   // fill in a static tool transform from frame6 to a frame of interest on the gripper
-  affine_gripper_wrt_frame6_ = computeAffineOfDH(0, gripper_jaw_length, 0, -M_PI/2);
+  set_gripper_jaw_length(gripper_jaw_length);
 
   theta_DH_offsets_.resize(7);
   for (int i = 0; i < 7; i++)
@@ -266,38 +197,45 @@ Forward::Forward()
 
 // provide DH theta and d values, return affine pose of gripper tip w/rt base frame
 // also computes all intermediate affine frames, w/rt base frame
-Eigen::Affine3d Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::VectorXd& d_vec)
+void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::VectorXd& d_vec)
 {
   // use or affect these member variables:
-  affines_i_wrt_iminus1_.resize(7);
+
+  std::vector <Eigen::Affine3d> affines_i_wrt_iminus1;
+  affines_i_wrt_iminus1.resize(7);
   Eigen::Affine3d xform;
   double a, d, theta, alpha;
   for (int i = 0; i < 7; i++)
   {
-      a = DH_a_params[i];
-      d = d_vec(i);
-      alpha = DH_alpha_params[i];
-      theta = theta_vec(i);
-      xform = computeAffineOfDH(a, d, alpha, theta);
-      affines_i_wrt_iminus1_[i]= xform;
+    a = DH_a_params[i];
+    d = d_vec(i);
+    alpha = DH_alpha_params[i];
+    theta = theta_vec(i);
+    xform = computeAffineOfDH(a, d, alpha, theta);
+    affines_i_wrt_iminus1[i]= xform;
   }
-
   affine_products_.resize(7);
-  affine_products_[0] =  affine_frame0_wrt_base_ * affines_i_wrt_iminus1_[0];
+  affine_products_[0] =  affine_frame0_wrt_base_ * affines_i_wrt_iminus1[0];
   for (int i = 1; i < 7; i++)
   {
-    affine_products_[i] = affine_products_[i-1] * affines_i_wrt_iminus1_[i];
+    affine_products_[i] = affine_products_[i-1] * affines_i_wrt_iminus1[i];
   }
   affine_gripper_wrt_base_ = affine_products_[6] * affine_gripper_wrt_frame6_;
-  return affine_gripper_wrt_base_;
 }
 
 Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec)
 {
-  convert_qvec_to_DH_vecs(q_vec);
-  Eigen::Affine3d forward_x_form(fwd_kin_solve_DH(thetas_DH_vec_, dvals_DH_vec_));
+  current_joint_state_ = q_vec;
+  Eigen::VectorXd thetas_DH_vec, dvals_DH_vec;
+  convert_qvec_to_DH_vecs(q_vec, thetas_DH_vec, dvals_DH_vec);
+  fwd_kin_solve_DH(thetas_DH_vec, dvals_DH_vec);
 
-  return forward_x_form;
+  return affine_gripper_wrt_base_;
+}
+
+Eigen::Affine3d Forward::fwd_kin_solve()
+{
+  return affine_gripper_wrt_base_;
 }
 
 Eigen::Affine3d Forward::get_frame0_wrt_base() const
@@ -305,13 +243,25 @@ Eigen::Affine3d Forward::get_frame0_wrt_base() const
   return affine_frame0_wrt_base_;
 }
 
+void Forward::set_frame0_wrt_base(const Eigen::Affine3d &affine_frame0_wrt_base)
+{
+  affine_frame0_wrt_base_ = affine_frame0_wrt_base;
+}
+
 Eigen::Affine3d Forward::get_gripper_wrt_frame6() const
 {
   return affine_gripper_wrt_frame6_;
 }
 
+void Forward::set_gripper_jaw_length(double  jaw_length)
+{
+  this->gripper_jaw_length_ = jaw_length;
+  affine_gripper_wrt_frame6_ = computeAffineOfDH(0, gripper_jaw_length, 0, -M_PI/2);
+}
+
 Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec)
 {
+  // use the jacobian to make the computation.
   fwd_kin_solve(q_vec);
   Eigen::Vector3d z_axis;
   Eigen::Vector3d vec_tip_minus_Oi_wrt_base;
@@ -351,6 +301,11 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec)
     Jacobian_.block<3, 1>(0, i) = z_axis.cross(vec_tip_minus_Oi_wrt_base);
   }
   // translational Jacobian depends on joint's z-axis and vector from i'th axis to robot tip
+  return Jacobian_;
+}
+
+Eigen::MatrixXd Forward::compute_jacobian()
+{
   return Jacobian_;
 }
 

@@ -1,14 +1,26 @@
-// @TODO Add License Text.
-// Copyright Wyatt S. Newman 2015 and Russell Jackson 2017
-/* 
- * File:   davinci_kinematics.h
- * Author: wsn
- *
- * Created Sept 2, 2015
+/*
+ *  davinci_inv_kinematics.h
+ *  Copyright (C) 2017  Wyatt S. Newman, Russell C. Jackson, and Tom Shkurti.
+
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-// NOTE:  FK and IK assume that the gripper-tip frame is expressed with respect
-// to the respective PMS base frame (not camera frame).  For motions w/rt camera
-//  first transform the desired camera-frame pose into base-frame pose.
+
+
+/**
+ * @brief The inverse kinematics class (derived from the forward kinematics class) is for 
+ * Computing an analytical inverse kinematics of the DaVinci robot.
+ */
 
 #ifndef CWRU_DAVINCI_KINEMATICS_DAVINCI_INV_KINEMATICS_H
 #define CWRU_DAVINCI_KINEMATICS_DAVINCI_INV_KINEMATICS_H
@@ -23,15 +35,8 @@
 
 #include <cwru_davinci_kinematics/davinci_fwd_kinematics.h>
 
-
-
 namespace davinci_kinematics
 {
-
-/**
- * @brief The inverse kinematics class (derived from the forward kinematics class) is for 
- * computing the inverse kinematics of the DaVinci robot.
- */
 class Inverse:private Forward
 {
 public:
@@ -77,10 +82,19 @@ public:
     return err_l_;
   }
 
+  /**
+   * @brief gets the rotational error of the inverse kinematics computations
+   */
   double getError_r()
   {
     return err_r_;
   }
+
+  using Forward::get_frame0_wrt_base;
+  using Forward::set_frame0_wrt_base;
+
+  using Forward::get_gripper_wrt_frame6;
+  using Forward::set_gripper_jaw_length;
 
 private:
   /**
@@ -123,9 +137,8 @@ private:
    *
    * @param q123 The proposed positons of joints 1-3
    * @param z_vec4 The z direction.
-   * @param desired_hand_pose The desired hand_base transform.
    */
-  Vectorq7x1 compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4, Eigen::Affine3d desired_hand_pose);
+  Vectorq7x1 compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4);
 
 
   /**
@@ -137,13 +150,14 @@ private:
    *  zvec_4 has a +/- ambiguity
    *
    * @param affine_gripper_tip The gripper tip transform.
-   * @param zvec_4 the z_vector of the wrist. (output)
-   * @param sol_04a a origin location.
-   * @param sol_04b is an another possible origin location.
+   * @param zvec_4a the first z_vector of the wrist. (output)
+   * @param zvec_4b the second z_vector of the wrist. (output)
+   * @param sol_04a a origin location. (output)
+   * @param sol_04b is an another possible origin location. (output)
    */
   void compute_w_from_tip(Eigen::Affine3d affine_gripper_tip,
     Eigen::Vector3d &zvec_4a, Eigen::Vector3d &zvec_4b,
-    Eigen::Vector3d &sol_O4a, Eigen::Vector3d &sol_O4b);
+    Eigen::Vector3d &sol_04a, Eigen::Vector3d &sol_04b);
 
   /**
    * @brief validate that a joint is inside of its joint limits.
@@ -162,9 +176,14 @@ private:
   Vectorq7x1 q_vec_soln_;
 
   /**
+   * @brief The stored desired pose for which the inverse kinematics has been most recently completed
+   */
+  Eigen::Affine3d desired_hand_pose_;
+
+  /**
    * @brief The minimum distance from joint 4 to the gripper tip.
    */
-  double min_dist_O4_to_gripper_tip_;
+  // double min_dist_O4_to_gripper_tip_;
 
   double err_l_;
   double err_r_;

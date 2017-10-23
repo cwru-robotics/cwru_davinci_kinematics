@@ -43,11 +43,17 @@ public:
   /**
    * @brief Get the inverse kinematics of the DaVinci.
    *
-   * Multiple solutions may be found.
+   * Multiple solutions may be found. If no solutions are found, then the return code indicates the reason for no solutions.
+   * -1: tool_tip_z_des <= 0.0
+   * -2: O_5_wrt_base(2) <= 0.0
+   * -3: projection_gripper_zvec_onto_O5_vec > 0.0
+   * -4: mag_z5xO5 >= dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis
+   * -5: A joint is out of range.
    *
    * @param desired_hand_pose The desired hand base transform of the  DaVinci robot.
    *
    * @return the number of solutions
+   *
    */
   int  ik_solve(Eigen::Affine3d const& desired_hand_pose);
 
@@ -102,7 +108,7 @@ private:
    *
    * @param q123 The proposed positons of joints 1-3
    * @param z_vec4 The z direction.
-   * @param The desired hand_base transform.
+   * @param desired_hand_pose The desired hand_base transform.
    */
   void compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4, Eigen::Affine3d desired_hand_pose);
 
@@ -117,7 +123,7 @@ private:
    *
    * @param affine_gripper_tip The gripper tip transform.
    * @param zvec_4 the z_vector of the wrist. (output)
-   * @param alt_04 an alternative z_vector. (output)
+   * @param alt_O4 an alternative z_vector. (output)
    */
   Eigen::Vector3d compute_w_from_tip(Eigen::Affine3d affine_gripper_tip, Eigen::Vector3d &zvec_4,
     Eigen::Vector3d &alt_O4);

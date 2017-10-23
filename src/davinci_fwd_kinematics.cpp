@@ -287,7 +287,32 @@ Eigen::Affine3d Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, cons
 Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec)
 {
   convert_qvec_to_DH_vecs(q_vec);
-  return fwd_kin_solve_DH(thetas_DH_vec_, dvals_DH_vec_);
+  Eigen::Affine3d forward_x_form(fwd_kin_solve_DH(thetas_DH_vec_, dvals_DH_vec_));
+
+  // This is a simple test for validation.
+  Eigen::Vector3d z_vec4, z4_wrt_3, O_6_wrt_4, xvec6_wrt_5, O_5_wrt_base, zvec5_wrt_base;
+  Eigen::Vector3d w_wrt_base, q123, alt_w_wrt_base, alt_q123, des_tip_origin, zvec_tip_wrt_base;
+  Eigen::Vector3d w_fk_test;
+  Eigen::VectorXd theta_vec, d_vec;
+  Eigen::Affine3d affine_test_fk;
+  Eigen::Matrix3d R_tip_wrt_base;
+
+  R_tip_wrt_base = forward_x_form.linear();
+  zvec_tip_wrt_base = R_tip_wrt_base.col(2);
+  des_tip_origin = forward_x_form.translation();
+  O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base * gripper_jaw_length;
+  // This should be 0.00
+  // The forward Kinematics fails this test (from inverse kinematics)
+  if (O_5_wrt_base(2) > 0.00)
+  {
+    // If O5 is above the portal, there are no solutions:
+    printf("In the forward sense, The offset value is: %f\n", O_5_wrt_base(2));
+    std::cout << des_tip_origin << std::endl << std::endl;
+    std::cout << zvec_tip_wrt_base << std::endl << std::endl;
+    std::cout << gripper_jaw_length << std::endl << std::endl;
+    std::cout << forward_x_form.linear() << std::endl << std::endl;
+  }
+  return forward_x_form;
 }
 
 Eigen::Affine3d Forward::get_frame0_wrt_base() const
@@ -345,15 +370,31 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec)
 }
 
 // gen_rand_legal_jnt_vals: compute random values within legal joint range:
-void Forward::gen_rand_legal_jnt_vals(Vectorq7x1 &qvec)
+void Forward::gen_rand_legal_jnt_vals(Vectorq7x1 &qvec, int joint_steps, int index)
 {
-  double drand_val;
   qvec(6) = 0;
-  unsigned int seed = time(NULL);
-  for (int i = 0; i < 6; i++)
+  if (joint_steps == -1 || index == -1)
   {
-    drand_val = static_cast<double> (rand_r(&seed))/(static_cast<double> (RAND_MAX));
-    qvec(i) = q_lower_limits[i] + (q_upper_limits[i] - q_lower_limits[i]) * drand_val;
+    double drand_val;
+    unsigned int seed = time(NULL);
+    for (int i = 0; i < 6; i++)
+    {
+      drand_val = static_cast<double> (rand_r(&seed))/(static_cast<double> (RAND_MAX));
+      qvec(i) = q_lower_limits[i] + (q_upper_limits[i] - q_lower_limits[i]) * drand_val;
+    }
+  }
+  else
+  {
+    for (int i(0); i < 6; i++)
+    {
+      int indexVal = pow(joint_steps, (i+1));
+      int jnt_index = (index % indexVal);
+
+      double dq = (q_upper_limits[i] - q_lower_limits[i]) / static_cast<double> (joint_steps-1);
+
+
+      qvec(i) = q_lower_limits[i] + dq * static_cast<double> (jnt_index);
+    }
   }
 }
 

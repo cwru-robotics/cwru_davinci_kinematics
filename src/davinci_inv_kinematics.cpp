@@ -209,10 +209,16 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
 
   R_tip_wrt_base = desired_hand_pose.linear();
   zvec_tip_wrt_base = R_tip_wrt_base.col(2);
-  O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base*gripper_jaw_length;
-  if (O_5_wrt_base(2) > 0.0)
+  O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base * gripper_jaw_length;
+  // This should be 0.00
+  if (O_5_wrt_base(2) > 0.01)
   {
     // If O5 is above the portal, there are no solutions:
+    printf("The offset value is: %f\n", O_5_wrt_base(2));
+    std::cout << des_tip_origin << std::endl << std::endl;
+    std::cout << zvec_tip_wrt_base << std::endl << std::endl;
+    std::cout << gripper_jaw_length << std::endl << std::endl;
+    std::cout << desired_hand_pose.linear() << std::endl << std::endl;
     return -2;
   }
 
@@ -232,8 +238,11 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
   // gripper x-axis is same as z5
   zvec5_wrt_base = -R_tip_wrt_base.col(0);
   double mag_z5xO5 = (zvec5_wrt_base.cross(O_5_wrt_base)).norm();
-  if (mag_z5xO5 < dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis)
+  // had to soften this clause as well.
+  if ((mag_z5xO5 + 0.0001) < (dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis))
   {
+    std::cout << mag_z5xO5 << std::endl << std::endl;
+    std::cout << dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis << std::endl << std::endl;
     return -4;
   }
 

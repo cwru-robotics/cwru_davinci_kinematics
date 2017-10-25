@@ -45,7 +45,7 @@ TEST(davinci_kinematics, Full_Kinematics_KI)
     Eigen::Affine3d affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
 
     int solCount = dvrk_inverse.ik_solve(affine_gripper_wrt_base);
-    ASSERT_GT(solCount, 0) << "The joint configuration:" << q_vec << "Failed \n";
+    ASSERT_GT(solCount, 0) << "The joint configuration:" << q_vec << "\nFailed \n";
 
     davinci_kinematics::Vectorq7x1 q_vecp = dvrk_inverse.get_soln();
 

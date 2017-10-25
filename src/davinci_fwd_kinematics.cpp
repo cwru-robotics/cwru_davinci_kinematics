@@ -287,7 +287,32 @@ Eigen::Affine3d Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, cons
 Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec)
 {
   convert_qvec_to_DH_vecs(q_vec);
-  return fwd_kin_solve_DH(thetas_DH_vec_, dvals_DH_vec_);
+  Eigen::Affine3d forward_x_form(fwd_kin_solve_DH(thetas_DH_vec_, dvals_DH_vec_));
+
+  // This is a simple test for validation.
+  Eigen::Vector3d z_vec4, z4_wrt_3, O_6_wrt_4, xvec6_wrt_5, O_5_wrt_base, zvec5_wrt_base;
+  Eigen::Vector3d w_wrt_base, q123, alt_w_wrt_base, alt_q123, des_tip_origin, zvec_tip_wrt_base;
+  Eigen::Vector3d w_fk_test;
+  Eigen::VectorXd theta_vec, d_vec;
+  Eigen::Affine3d affine_test_fk;
+  Eigen::Matrix3d R_tip_wrt_base;
+
+  R_tip_wrt_base = forward_x_form.linear();
+  zvec_tip_wrt_base = R_tip_wrt_base.col(2);
+  des_tip_origin = forward_x_form.translation();
+  O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base * gripper_jaw_length;
+  // This should be 0.00
+  // The forward Kinematics fails this test (from inverse kinematics)
+  if (O_5_wrt_base(2) > 0.00)
+  {
+    // If O5 is above the portal, there are no solutions:
+    printf("In the forward sense, The offset value is: %f\n", O_5_wrt_base(2));
+    std::cout << des_tip_origin << std::endl << std::endl;
+    std::cout << zvec_tip_wrt_base << std::endl << std::endl;
+    std::cout << gripper_jaw_length << std::endl << std::endl;
+    std::cout << forward_x_form.linear() << std::endl << std::endl;
+  }
+  return forward_x_form;
 }
 
 Eigen::Affine3d Forward::get_frame0_wrt_base() const

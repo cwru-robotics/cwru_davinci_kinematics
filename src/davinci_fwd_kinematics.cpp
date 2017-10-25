@@ -345,15 +345,31 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec)
 }
 
 // gen_rand_legal_jnt_vals: compute random values within legal joint range:
-void Forward::gen_rand_legal_jnt_vals(Vectorq7x1 &qvec)
+void Forward::gen_rand_legal_jnt_vals(Vectorq7x1 &qvec, int joint_steps, int index)
 {
-  double drand_val;
   qvec(6) = 0;
-  unsigned int seed = time(NULL);
-  for (int i = 0; i < 6; i++)
+  if (joint_steps == -1 || index == -1)
   {
-    drand_val = static_cast<double> (rand_r(&seed))/(static_cast<double> (RAND_MAX));
-    qvec(i) = q_lower_limits[i] + (q_upper_limits[i] - q_lower_limits[i]) * drand_val;
+    double drand_val;
+    unsigned int seed = time(NULL);
+    for (int i = 0; i < 6; i++)
+    {
+      drand_val = static_cast<double> (rand_r(&seed))/(static_cast<double> (RAND_MAX));
+      qvec(i) = q_lower_limits[i] + (q_upper_limits[i] - q_lower_limits[i]) * drand_val;
+    }
+  }
+  else
+  {
+    for (int i(0); i < 6; i++)
+    {
+      int indexVal = pow(joint_steps, (i+1));
+      int jnt_index = (index % indexVal);
+
+      double dq = (q_upper_limits[i] - q_lower_limits[i]) / static_cast<double> (joint_steps-1);
+
+
+      qvec(i) = q_lower_limits[i] + dq * static_cast<double> (jnt_index);
+    }
   }
 }
 

@@ -52,8 +52,12 @@ public:
    * @brief Randomly generate a set of legal joint angles for the dvrk.
    *
    * The limits of the joints are defined in the davinci_kinamatic_definiitons.h header file.
+   *
+   * @param qvec is the generated joint list
+   * @param joint_steps is the number of steps to cycle through for each joint.
+   * @param index is the index of the joint to evaluate.
    */
-  static void gen_rand_legal_jnt_vals(Vectorq7x1 &qvec);
+  static void gen_rand_legal_jnt_vals(Vectorq7x1 &qvec, int joint_steps=-1, int index=-1);
 
   static bool get_jnt_val_by_name(std::string jnt_name, sensor_msgs::JointState jointState, double &qval);
 

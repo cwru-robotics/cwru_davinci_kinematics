@@ -9,8 +9,8 @@
 #include <vector>
 
 /**
- * @TODO(wsn) There are alot of questions and queries in the the comments.
- * @TODO(rcj) Validate that the questions have been answered.
+ * TODO(wsn) There are alot of questions and queries in the the comments.
+ * TODO(rcj) Validate that the questions have been answered.
  */
 namespace davinci_kinematics
 {
@@ -127,12 +127,20 @@ Eigen::Vector3d Inverse::compute_w_from_tip(Eigen::Affine3d affine_gripper_tip, 
 bool Inverse::fit_q_to_range(double q_min, double q_max, double &q)
 {
   q = fmod(q, 2.0 * M_PI);
+
   if (q > M_PI)
   {
     q -= 2.0 * M_PI;
   }
+  if (q < -M_PI)
+  {
+    q += 2.0 * M_PI;
+  }
   if (q < q_min || q > q_max)
+  {
+    printf("Range is <%f, %f>, joint is: %f\n", q_min, q_max, q);
     return false;
+  }
   else
     return true;
 }
@@ -150,12 +158,24 @@ bool Inverse::fit_joints_to_range(Vectorq7x1 &qvec)
     if (i != 2)
     {
       does_fit = fit_q_to_range(q_lower_limits[i], q_upper_limits[i], q);
+      if (does_fit == false)
+      {
+       printf("Joint %d failed\n", i);
+      }
     }
     else
     {
       does_fit = true;
-      if (q < q_lower_limits[i]) does_fit = false;
-      if (q > q_upper_limits[i]) does_fit = false;
+      if (q < q_lower_limits[i])
+      {
+        printf("Joint %d value: %f, lower limit: %f\n", i, q, q_lower_limits[i]);
+        does_fit = false;
+      }
+      if (q > q_upper_limits[i])
+      {
+        printf("Joint %d value: %f, lower limit: %f\n", i, q, q_upper_limits[i]);
+        does_fit = false;
+      }
     }
     qvec[i] = q;
     fits = fits && does_fit;
@@ -183,16 +203,23 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     // Disallow a positive tool-tip z-height since that would be above the portal
     // in fact, must insert at least past the wrist joint, z4, so
     // tip_z must be at least...?
-    return 0;
+    // return 0;
+    return -1;
   }
 
   R_tip_wrt_base = desired_hand_pose.linear();
   zvec_tip_wrt_base = R_tip_wrt_base.col(2);
-  O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base*gripper_jaw_length;
-  if (O_5_wrt_base(2) > 0.0)
+  O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base * gripper_jaw_length;
+  // This should be 0.00
+  if (O_5_wrt_base(2) > 0.01)
   {
     // If O5 is above the portal, there are no solutions:
-    return 0;
+    printf("The offset value is: %f\n", O_5_wrt_base(2));
+    std::cout << des_tip_origin << std::endl << std::endl;
+    std::cout << zvec_tip_wrt_base << std::endl << std::endl;
+    std::cout << gripper_jaw_length << std::endl << std::endl;
+    std::cout << desired_hand_pose.linear() << std::endl << std::endl;
+    return -2;
   }
 
   double projection_gripper_zvec_onto_O5_vec = zvec_tip_wrt_base.dot(O_5_wrt_base);
@@ -204,16 +231,19 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     // wrist bend to be |q5|< pi/2
     // this is a necessary but not sufficient test;
     // can still violate wrist-bend>pi/2 and pass this test
-    return 0;
+    return -3;
   }
   // by definition of tip frame
   // better: look at cross product of O_5_wrt_base and zvec5_wrt_base
   // gripper x-axis is same as z5
   zvec5_wrt_base = -R_tip_wrt_base.col(0);
   double mag_z5xO5 = (zvec5_wrt_base.cross(O_5_wrt_base)).norm();
-  if (mag_z5xO5 < dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis)
+  // had to soften this clause as well.
+  if ((mag_z5xO5 + 0.0001) < (dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis))
   {
-    return 0;
+    std::cout << mag_z5xO5 << std::endl << std::endl;
+    std::cout << dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis << std::endl << std::endl;
+    return -4;
   }
 
   // first step: get the wrist-bend origin on tool shaft from desired gripper pose:
@@ -237,7 +267,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
   else
   {
     // otherwise there is no solution.
-    return 0;
+    return -5;
   }
 }
 

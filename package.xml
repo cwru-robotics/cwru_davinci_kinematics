@@ -21,8 +21,8 @@
   <!-- <url type="website">http://ros.org/wiki/jacobian_publisher</url> -->
 
 
-  <!-- Author tags are optional, mutiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintianers, but could be -->
+  <!-- Author tags are optional, multiple are allowed, one per tag -->
+  <!-- Authors do not have to be maintainers, but could be -->
   <!-- Example: -->
   <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
 
@@ -45,7 +45,8 @@
   <build_depend>eigen</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>roslint</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_eigen</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>cmake_modules</run_depend>
@@ -53,6 +54,10 @@
   <run_depend>eigen</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>tf</run_depend>
+  <run_depend>tf2</run_depend>
+  <run_depend>tf2_eigen</run_depend>
+
+  <test_depend>roslint</test_depend>
   <!-- The export tag contains other, unspecified, tags -->
 
   <export>

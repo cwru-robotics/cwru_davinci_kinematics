@@ -43,11 +43,19 @@ public:
   /**
    * @brief Get the inverse kinematics of the DaVinci.
    *
-   * Multiple solutions may be found.
+   * TODO(rcj,wsn) redefine the error codes and discuss jaw opening.
+   * Multiple solutions may be found. If no solutions are found, then the return code indicates the reason for no solutions.
+   * -1: tool_tip_z_des <= 0.0
+   * -2: O_5_wrt_base(2) <= 0.0
+   * -3: projection_gripper_zvec_onto_O5_vec > 0.0
+   * -4: mag_z5xO5 >= dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis
+   * -5: A joint is out of range.
+   *
    *
    * @param desired_hand_pose The desired hand base transform of the  DaVinci robot.
    *
    * @return the number of solutions
+   *
    */
   int  ik_solve(Eigen::Affine3d const& desired_hand_pose);
 
@@ -60,6 +68,19 @@ public:
   {
     return q_vec_soln_;
   };
+
+  /**
+   * @brief gets the positional error of the inverse kinematics computations
+   */
+  double getError_l()
+  {
+    return err_l_;
+  }
+
+  double getError_r()
+  {
+    return err_r_;
+  }
 
 private:
   /**
@@ -102,9 +123,9 @@ private:
    *
    * @param q123 The proposed positons of joints 1-3
    * @param z_vec4 The z direction.
-   * @param The desired hand_base transform.
+   * @param desired_hand_pose The desired hand_base transform.
    */
-  void compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4, Eigen::Affine3d desired_hand_pose);
+  Vectorq7x1 compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4, Eigen::Affine3d desired_hand_pose);
 
 
   /**
@@ -117,10 +138,12 @@ private:
    *
    * @param affine_gripper_tip The gripper tip transform.
    * @param zvec_4 the z_vector of the wrist. (output)
-   * @param alt_04 an alternative z_vector. (output)
+   * @param sol_04a a origin location.
+   * @param sol_04b is an another possible origin location.
    */
-  Eigen::Vector3d compute_w_from_tip(Eigen::Affine3d affine_gripper_tip, Eigen::Vector3d &zvec_4,
-    Eigen::Vector3d &alt_O4);
+  void compute_w_from_tip(Eigen::Affine3d affine_gripper_tip,
+    Eigen::Vector3d &zvec_4a, Eigen::Vector3d &zvec_4b,
+    Eigen::Vector3d &sol_O4a, Eigen::Vector3d &sol_O4b);
 
   /**
    * @brief validate that a joint is inside of its joint limits.
@@ -142,6 +165,9 @@ private:
    * @brief The minimum distance from joint 4 to the gripper tip.
    */
   double min_dist_O4_to_gripper_tip_;
+
+  double err_l_;
+  double err_r_;
 };
 
 }  // namespace davinci_kinematics

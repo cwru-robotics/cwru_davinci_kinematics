@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+//#define VERBOSE
+
 /**
  * TODO(wsn) There are alot of questions and queries in the the comments.
  * TODO(rcj) Validate that the questions have been answered.
@@ -302,6 +304,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
   {
     case 0:
     {
+    #ifdef VERBOSE
       std::cout << "There are NO solutions\n";
       std::cout << std::endl;
       for (int index(0); index < q_fail.size(); index++)
@@ -311,6 +314,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
       }
       std::cout << std::endl;
       std::cout << std::endl;
+      #endif
     }
     return -6;
 

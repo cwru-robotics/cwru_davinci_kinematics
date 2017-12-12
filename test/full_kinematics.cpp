@@ -1,6 +1,7 @@
 // @TODO Add License Text.
 // Copyright Wyatt S. Newman 2015 and Russell Jackson 2017
 
+#include <Eigen/Eigen>
 
 #include <sensor_msgs/JointState.h>
 #include <gtest/gtest.h>
@@ -22,11 +23,81 @@ void gen_rand_joint_perturbations(davinci_kinematics::Vectorq7x1 &dqvec, double 
   }
 }
 
+TEST(davinci_kinematics, Full_Kinematics_PJP)
+{
+  const double lower_x = -0.5;
+  const double upper_x = 0.5;
+  const double lower_y = -0.25;
+  const double upper_y = 0.25;
+  const double lower_z = -0.2;
+  const double upper_z = 0.0;
+  const double delta_p = 0.5;
+
+  const double lower_a = -1.57;
+  const double upper_a = 1.57;
+  const double delta_a = 0.2;
+
+  davinci_kinematics::Forward dvrk_forward;
+  davinci_kinematics::Inverse dvrk_inverse;
+
+  int rejected = 0;
+  int correct = 0;
+  int incorrect = 0;
+
+  for (double x = lower_x; x <= upper_x; x = x + delta_p)
+  {
+    for (double y = lower_y; y <= upper_y; y = y + delta_p)
+    {
+      for (double z = lower_z; z <= upper_z; z = z + delta_p)
+      {
+        for (double roll = lower_a; roll <= upper_a; roll = roll + delta_a)
+        {
+          for (double pitch = lower_a; pitch <= upper_a; pitch = pitch + delta_a)
+          {
+            for (double yaw = lower_a; yaw <= upper_a; yaw = yaw + delta_a)
+            {
+              Eigen::Matrix3d R;
+              R =
+                Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX())
+                * Eigen::AngleAxisd(pitch,  Eigen::Vector3d::UnitY())
+                * Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
+              Eigen::Affine3d in;
+              in = R;
+              in.translation() = Eigen::Vector3d(x, y, z);
+              int s = dvrk_inverse.ik_solve(in);
+              if (s < 1)
+              {
+                rejected++;
+              }
+              else
+              {
+                davinci_kinematics::Vectorq7x1 j = dvrk_inverse.get_soln();
+                Eigen::Affine3d out = dvrk_forward.fwd_kin_solve(j);
+                if (out.matrix().isApprox(in.matrix(), 0.0001))
+                {
+                  correct++;
+                }
+                else
+                {
+                  rejected++;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  ROS_INFO("%d rejected, %d correct, %d incorrect", rejected, correct, incorrect);
+  ASSERT_LT(incorrect, 1);
+  SUCCEED();
+}
+
 /**
  * @brief This test file defines a collection of tests which can be used for validation
  * of the closed loop kineamtics definitons.
  */
-TEST(davinci_kinematics, Full_Kinematics_KI)
+TEST(davinci_kinematics, Full_Kinematics_JPJ)
 {
   // randomly generate a joint position:
   // compute the corresponding FK,
@@ -52,9 +123,9 @@ TEST(davinci_kinematics, Full_Kinematics_KI)
   uint64_t bad_count(0);
   uint64_t total_count(0);
 
-  double best_error(10000.0);
+  double smallest_error(10000.0);
+  double largest_error(0.0);
 
-  double worst_error(0.5);
   double ik_lin_error(0.0);
   double ik_rot_error(0.0);
   davinci_kinematics::Vectorq7x1  q_vec_fwd_worst, q_vec_inv_worst;
@@ -109,17 +180,17 @@ TEST(davinci_kinematics, Full_Kinematics_KI)
 
     double err_mag(err_vec.norm());
 
-    if (err_mag > worst_error)
+    if (err_mag > largest_error)
     {
-      worst_error = err_mag;
+      largest_error = err_mag;
       q_vec_fwd_worst = q_vec;
       q_vec_inv_worst = q_vecp;
       ik_lin_error = dvrk_inverse.getError_l();
       ik_rot_error = dvrk_inverse.getError_r();
     }
-    if (err_mag < best_error)
+    if (err_mag < smallest_error)
     {
-      best_error = err_mag;
+      smallest_error = err_mag;
     }
 
     if (err_mag > 1.0e-4)
@@ -136,8 +207,8 @@ TEST(davinci_kinematics, Full_Kinematics_KI)
   }
   printf("after iterating through the entire permutation of joints (%ld): %ld were good and %ld were bad\n",
     total_count, good_count, bad_count);
-  printf("The best error was %f and the worst error was %f\n", best_error, worst_error);
-  std::cout << "The worst error occured at input joints:\n" << q_vec_fwd_worst << "\n\n"
+  printf("The smallest error was %f and the largest error was %f\n", smallest_error, largest_error);
+  std::cout << "The largest error occured at input joints:\n" << q_vec_fwd_worst << "\n\n"
     << q_vec_inv_worst << "\n\n";
   printf("The linear error was %f\n", ik_lin_error);
   printf("The rotational error was %f\n", ik_rot_error);

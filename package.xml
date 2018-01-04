@@ -57,7 +57,8 @@
   <run_depend>tf2</run_depend>
   <run_depend>tf2_eigen</run_depend>
 
-  <test_depend>roslint</test_depend>
+  <!-- This should be a test_depend -->
+  <build_depend>roslint</build_depend>
   <!-- The export tag contains other, unspecified, tags -->
 
   <export>

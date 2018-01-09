@@ -1,6 +1,25 @@
-// @TODO Add License Text.
-// Copyright Wyatt S. Newman 2015 and Russell Jackson 2017
+/*
+ *  full_kinematics.cpp
+ *  Copyright (C) 2017  Wyatt S. Newman, Russell C. Jackson, and Tom Shkurti.
 
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// This file runs unit tests in order to validate the fwd and inverse kinematics
+// of the cwru_davinci_kinematics repository.
+
+#include <vector>
 #include <Eigen/Eigen>
 
 #include <sensor_msgs/JointState.h>
@@ -132,7 +151,6 @@ TEST(davinci_kinematics, Full_Kinematics_JPJ)
   q_vec_fwd_worst = davinci_kinematics::Vectorq7x1::Zero();
   q_vec_inv_worst = davinci_kinematics::Vectorq7x1::Zero();
 
-
   // dense sequential analysis.
   // TODO(wsn) Currently the joint limits have to be padded in order to keep the solution boundaries stable.
   for (double jnt0 = q_lower_limits[0] + 0.0001; jnt0 < q_upper_limits[0] - 0.0001; jnt0 += dj[0])
@@ -151,7 +169,8 @@ TEST(davinci_kinematics, Full_Kinematics_JPJ)
     q_vec(5) = jnt5;
     q_vec(6) = 0.0;  // jnt6;
 
-    /* q_vec(0) = -0.975;
+    /*
+    q_vec(0) = -0.975;
     q_vec(1) = -0.6825;
     q_vec(2) = 0.0375;
     q_vec(3) = -2.19375;
@@ -165,8 +184,8 @@ TEST(davinci_kinematics, Full_Kinematics_JPJ)
     q_vec(3) = -1.06875;
     q_vec(4) = -1.5229;
     q_vec(5) = -1.3483;
-    q_vec(6) = 0.0;  // jnt6; */
-
+    q_vec(6) = 0.0;  // jnt6;
+    */
 
     Eigen::Affine3d affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
 
@@ -175,19 +194,21 @@ TEST(davinci_kinematics, Full_Kinematics_JPJ)
     // EXPECT_GT(solCount, 0) << "The joint configuration FWD:\n" << q_vec <<
     //  "\nThe joint configuration INV:\n" << q_vecp << "\nFailed \n";
 
-
     davinci_kinematics::Vectorq7x1 err_vec = q_vec - q_vecp;
 
     double err_mag(err_vec.norm());
 
+
     if (err_mag > largest_error)
     {
       largest_error = err_mag;
+
       q_vec_fwd_worst = q_vec;
       q_vec_inv_worst = q_vecp;
       ik_lin_error = dvrk_inverse.getError_l();
       ik_rot_error = dvrk_inverse.getError_r();
     }
+
     if (err_mag < smallest_error)
     {
       smallest_error = err_mag;
@@ -239,7 +260,6 @@ TEST(davinci_kinematics, Full_Kinematics_Jacobian)
   // compute the corresponding FK,
   // Compute the IK
   // compare the new joints with the original joints.
-
   davinci_kinematics::Vectorq7x1  q_vec_1;
   davinci_kinematics::Vectorq7x1  dq_vec;
   davinci_kinematics::Vectorq7x1  q_vec_2;
@@ -248,11 +268,9 @@ TEST(davinci_kinematics, Full_Kinematics_Jacobian)
   Eigen::Vector3d dp_fk, dp_J, dp_err_vec;
   Eigen::Matrix3d R1, R2, dR;
   Eigen::Vector3d dphi_J, dphi_fk, dphi_err_vec;
-  Eigen::MatrixXd Jacobian;
   Eigen::VectorXd dq_vec6x1, dp6x1;
   dq_vec6x1.resize(6, 1);
   dp6x1.resize(6, 1);
-
 
   double p_err, phi_err;
   const int ni(25);
@@ -261,26 +279,28 @@ TEST(davinci_kinematics, Full_Kinematics_Jacobian)
   for (int i(0); i < ni; i++)
   {
     dvrk_forward.gen_rand_legal_jnt_vals(q_vec_1);
+    Eigen::MatrixXd Jacobian = dvrk_forward.compute_jacobian(q_vec_1);
+    Eigen::Affine3d affine_fk1 = dvrk_forward.fwd_kin_solve();
+
+    std::cout << "The Jacobian at iteration " << i <<" is : \n" << Jacobian << std::endl;
 
     for (int j = 0; j < nj; j++)
     {
       gen_rand_joint_perturbations(dq_vec);
       q_vec_2 = q_vec_1 + dq_vec;
 
-      davinci_kinematics::Vectorq6x1 dq_vec6x1;
+      davinci_kinematics::Vectorq7x1 dq_vec7x1;
       for (int i = 0; i < 6; i++) dq_vec6x1(i) = dq_vec(i);
 
-      Eigen::Affine3d affine_fk1 = dvrk_forward.fwd_kin_solve(q_vec_1);
       Eigen::Affine3d affine_fk2 = dvrk_forward.fwd_kin_solve(q_vec_2);
 
       dp_fk = affine_fk2.translation() - affine_fk1.translation();
-      dR = affine_fk2.linear()*affine_fk1.linear().transpose();
+      dR = affine_fk2.linear() * affine_fk1.linear().transpose();
 
       // For perturbations, can get dPhi 3x1 vector from components of dR operator
       dphi_fk(0) = -dR(1, 2);
       dphi_fk(1) = dR(0, 2);
       dphi_fk(2) = -dR(0, 1);
-      Jacobian = dvrk_forward.compute_jacobian(q_vec_1);
 
       // here is the Jacobian-based approximation of incremental Cartesian pose change
       dp6x1 = Jacobian * dq_vec6x1;
@@ -291,8 +311,6 @@ TEST(davinci_kinematics, Full_Kinematics_Jacobian)
 
       p_err = dp_err_vec.norm();
 
-
-
       // repeat for eval of angular Jacobian:
       // (dphi_x, dphi_y, dphi_z)
       dphi_J = dp6x1.block<3, 1>(3, 0);
@@ -302,11 +320,61 @@ TEST(davinci_kinematics, Full_Kinematics_Jacobian)
       double p_err_rat = p_err/(dp_fk.norm());
       double phi_err_rat = phi_err/(dphi_fk.norm());
 
-      ASSERT_LT(p_err_rat, 1.0e-4);
-      ASSERT_LT(phi_err_rat, 1.0e-4);
+      EXPECT_LT(p_err_rat, 1.0e-4);
+      EXPECT_LT(phi_err_rat, 1.0e-4);
     }
   }
   SUCCEED();
+}
+
+TEST(davinci_kinematics, Full_Kinematics_Limits)
+{
+  unsigned int iterations(10000);
+  unsigned int seed = time(NULL);
+  // number of times to permute through the error codes:
+  for (unsigned int i(0); i < iterations; i++)
+  {
+    davinci_kinematics::Vectorq7x1 q_test;
+    davinci_kinematics::Forward::gen_rand_legal_jnt_vals(q_test);
+    q_test(6) = 0.0;
+
+    if (q_test(2) < 0.035)
+    {
+      q_test(3) = 0.1;
+      int result = davinci_kinematics::Forward::check_jnts(q_test);
+      EXPECT_EQ(1, result);
+
+      q_test(3) = 0.0;
+      q_test(4) = 0.0;
+      q_test(5) = 0.0;
+      result = davinci_kinematics::Forward::check_jnts(q_test);
+      EXPECT_EQ(0, result);
+    }
+    else
+    {
+      for (int j (0); j < 64; j++)
+      {
+        davinci_kinematics::Vectorq7x1 q_testA = q_test;
+        std::vector<double> over_under(6, 0.0);
+        for (unsigned int k(0); k < 6; k++)
+        {
+          if (((j >> k) % 2) == 1)
+          {
+            int result = rand_r(&seed) % 2;
+            if (result == 1)
+            {
+              over_under[k] = -1.0;
+            }
+            else over_under[k] = 1.0;
+            if (k == 2) over_under[k] = 1.0;
+          }
+          q_testA(k) += over_under[k] * 10.0;
+        }
+        int result = davinci_kinematics::Forward::check_jnts(q_testA);
+        EXPECT_EQ(-j, result);
+      }
+    }
+  }
 }
 
 int main(int argc, char **argv)

@@ -77,6 +77,14 @@ target_link_libraries(ik_demo
   ${catkin_LIBRARIES}
 )
 
+add_executable(one_to_many_demo examples/one_to_many_demo.cpp)
+
+target_link_libraries(one_to_many_demo
+  davinci_kinematics
+  davinci_kinematic_definitions
+  ${catkin_LIBRARIES}
+)
+
 
 file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)
 file(GLOB_RECURSE TEST_FILES_CPP test/*.cpp)

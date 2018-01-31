@@ -127,7 +127,8 @@ TEST(davinci_kinematics, Full_Kinematics_JPJ)
   davinci_kinematics::Forward dvrk_forward;
   davinci_kinematics::Inverse dvrk_inverse;
 
-  double joint_steps(4);
+//TES: This only iterated over 4 steps for each joint. I took it up to 20.
+  double joint_steps(20);
   double dj[7];
   for (int index(0); index < 7; index++)
   {
@@ -234,7 +235,7 @@ TEST(davinci_kinematics, Full_Kinematics_JPJ)
   printf("The linear error was %f\n", ik_lin_error);
   printf("The rotational error was %f\n", ik_rot_error);
   // fully random
-  for (int i(0); i < 25; i++)
+  for (int i(0); i < 100; i++)
   {
     dvrk_forward.gen_rand_legal_jnt_vals(q_vec);
 

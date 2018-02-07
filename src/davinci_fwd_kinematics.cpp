@@ -63,6 +63,7 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec, Eigen::VectorXd &
   dvals_DH_vec.resize(7);
   dvals_DH_vec = dval_DH_offsets_;
   dvals_DH_vec(2) += q_vec(2);
+  // dvals_DH_vec(1) += q_vec(2);
 }
 
 int Forward::check_jnts(const Vectorq7x1& q_vec)
@@ -184,12 +185,16 @@ Forward::Forward()
   for (int i = 0; i < 7; i++)
   {
     theta_DH_offsets_(i) = DH_q_offsets[i];
+
+    std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(i): " << theta_DH_offsets_(i)  <<std::endl;
   }
   // don't put prismatic displacement here
+  // theta_DH_offsets_(2) = 0.0;
   theta_DH_offsets_(2) = 0.0;
+  std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(2): " << theta_DH_offsets_(2)  <<std::endl;
 
   dval_DH_offsets_.resize(7);
-  dval_DH_offsets_<< 0, 0, DH_q_offsets[2], 0, 0, 0, 0;
+  dval_DH_offsets_<< 0, 0.003 , DH_q_offsets[2], 0, 0, 0, 0;
 
   // resize MatrixXd Jacobian_ and initialize terms to 0's
   Jacobian_ = Eigen::MatrixXd::Zero(6, 6);
@@ -221,6 +226,14 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::Ve
     affine_products_[i] = affine_products_[i-1] * affines_i_wrt_iminus1[i];
   }
   affine_gripper_wrt_base_ = affine_products_[6] * affine_gripper_wrt_frame6_;
+
+  // added for wrist pt coordinate w/rt base frame
+  affine_wrist_wrt_base_ = affine_products_[2];
+}
+
+Eigen::Affine3d Forward::get_wrist_wrt_base()
+{
+  return affine_wrist_wrt_base_;
 }
 
 Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec)

@@ -33,7 +33,7 @@
 
 /**
  * @brief The davinci_kinematics namespace is where both the forward and inverse dvrk kinematic libraries are defined
- *  
+ *
  * This is to prevent namespace collisions.
  */
 namespace davinci_kinematics
@@ -46,7 +46,7 @@ typedef Eigen::Matrix<double, 7, 1> Vectorq7x1;
 
 
 /**
- * @brief The Forward kinematics library definition. 
+ * @brief The Forward kinematics library definition.
  *
  * In addition to computing the SE(3) transform based on a set of joint angles,
  * This object also generates a Jacobian matrix.
@@ -64,7 +64,7 @@ public:
     * Code Outline:
     * < 0: A binary indication of which joints are in violation: [-127, -1].
     *   1: While technically reachable, this joint vector places the wrist inside the cannula.
-    *   2: The violation is due to the gripper jaw being open past its limits. The limits are dependant on joint index 5. 
+    *   2: The violation is due to the gripper jaw being open past its limits. The limits are dependant on joint index 5.
     */
   static int check_jnts(const Vectorq7x1& q_vec);
 
@@ -80,7 +80,7 @@ public:
   /**
    * @brief Get the value of a joint angle by name
    *
-   * 
+   *
    */
   static bool get_jnt_val_by_name(std::string jnt_name, sensor_msgs::JointState jointState, double &qval);
 
@@ -91,7 +91,7 @@ public:
 
   /**
    * @brief Given the full set of joint positions, compute the SE(3) transform of the  Provide joint angles and prismatic displacement (q_vec[2]) w/rt DaVinci coords
-   * 
+   *
    * will get translated to DH coords to solve fwd kin
    * return affine describing gripper pose w/rt base frame
    *
@@ -120,7 +120,7 @@ public:
    *
    * @param q_vec (optional) The robot joint positions. If empty, the current joints are used for computation.
    *
-   * @return a 6x6 Eigen Matrix. 
+   * @return a 6x6 Eigen Matrix.
    */
   Eigen::MatrixXd compute_jacobian(const Vectorq7x1& q_vec);
   Eigen::MatrixXd compute_jacobian();
@@ -146,11 +146,13 @@ public:
    */
   Eigen::Affine3d get_gripper_wrt_frame6() const;
 
+  Eigen::Affine3d get_wrist_wrt_base();
+
   /**
    * @brief sets the transform from the joint frame 6 frame to the gripper frame.
    *
    * @param jaw_length the length of the gripper jaw.
-   * 
+   *
    * @return The transform between the joint frame 6 and the gripper frame.
    */
   void set_gripper_jaw_length(double jaw_length);
@@ -200,7 +202,7 @@ protected:
 private:
   /**
    * @brief Given a vector of joint states in DaVinci coords, convert these into
-   * equivalent DH parameters, theta and d 
+   * equivalent DH parameters, theta and d
    *
    * @param q_vec the vector of joint states.
    *
@@ -240,7 +242,7 @@ private:
 
   /**
    * @brief This is the tranform aligning the robot with a world frame.
-   */ 
+   */
   Eigen::Affine3d affine_frame0_wrt_base_;
 
   /**
@@ -255,6 +257,8 @@ private:
    */
   Eigen::Affine3d affine_gripper_wrt_base_;
 
+  Eigen::Affine3d affine_wrist_wrt_base_;
+
   /**
    * @brief This is the list of transforms from the robot base to each joint.
    *
@@ -264,14 +268,14 @@ private:
 
   /**
    * @brief This is the list of theta offset values for the DaVinci DH joint parameters.
-   * 
+   *
    * Stored intrinsicaly as part of the dvrk kinematics
    */
   Eigen::VectorXd theta_DH_offsets_;
 
   /**
    * @brief This is the list of d offset values for the DaVinci DH joint parameters.
-   * 
+   *
    * Stored intrinsicaly as part of the dvrk kinematics
    */
   Eigen::VectorXd dval_DH_offsets_;

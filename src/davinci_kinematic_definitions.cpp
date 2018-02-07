@@ -24,8 +24,8 @@ namespace davinci_kinematics
 
 // origin0 coincident w/ origin1
 const double DH_a1 = 0.0;
-// axis z1,z2 intersect
-const double DH_a2 = 0.0;
+// axis z1,z2 (prismatic) intersect
+const double DH_a2 = 0.001;
 // axes z2 (prismatic) and z3 (shaft rot) intersect
 const double DH_a3 = 0.0;
 // axes z3 (shaft rot) and z4 (wrist bend) intersect
@@ -37,14 +37,14 @@ const double DH_a6 = 0.0;
 // not sure what to do with this one
 const double DH_a7 = 0.0;
 
-const double DH_d1 = 0.0;
-//  THIS IS VARIABLE
-const double DH_d2 = 0.0;
-const double DH_d3 = 0.0;
-const double DH_d4 = 0.0;
-const double DH_d5 = 0.0;
-const double DH_d6 = 0.0;
-const double DH_d7 = 0.0;
+// const double DH_d1 = 0.0;
+// //  THIS IS VARIABLE
+// const double DH_d2 = 0.0;
+// const double DH_d3 = 0.0;
+// const double DH_d4 = 0.0;
+// const double DH_d5 = 0.0;
+// const double DH_d6 = 0.0;
+// const double DH_d7 = 0.0;
 
 // robot.DH.alpha= '[-pi/2 0 -pi/2 pi/2 -pi/2 0]';
 const double DH_alpha1 = M_PI/2.0;
@@ -123,10 +123,10 @@ const double DH_a_params[7] =
   DH_a1, DH_a2, DH_a3, DH_a4, DH_a5, DH_a6, DH_a7
 };
 
-const double DH_d_params[7] =
-{
-  DH_d1, DH_d2, DH_d3, DH_d4, DH_d5, DH_d6, DH_d7
-};
+// const double DH_d_params[7] =
+// {
+//   DH_d1, DH_d2, DH_d3, DH_d4, DH_d5, DH_d6, DH_d7
+// };
 
 const double DH_alpha_params[7] =
 {

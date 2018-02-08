@@ -34,6 +34,119 @@ Inverse::Inverse() : Forward()
   // Blank constructor.
 }
 
+
+bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen::VectorXd &q_ik)
+{
+  Eigen::Affine3d A_fwd,A_fwd2;
+  Eigen::Matrix3d R1,R2,R_err;
+  Eigen::Vector3d dxyz,dphi,dxyz2;
+  Eigen::VectorXd q7(1);
+  Eigen::VectorXd dp,dq,k_rot_axis,q_updated;
+  Eigen::MatrixXd Jacobian;
+
+  dp.resize(6);
+  dq.resize(7);
+  q_updated.resize(7);
+  double dtheta;
+
+  q7 << 0;
+
+  A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_ik);
+
+  R1 = desired_hand_pose.linear();
+  R2 = A_fwd.linear();
+  dxyz = desired_hand_pose.translation()-A_fwd.translation();
+  R_err = R2*R1.transpose();
+  Eigen::AngleAxisd angleAxis(R_err);
+  dtheta = angleAxis.angle();
+  k_rot_axis = angleAxis.axis();
+  dphi = -k_rot_axis*dtheta;
+
+  dp.block<3,1>(0,0) = dxyz;
+  dp.block<3,1>(3,0) = dphi;
+  Jacobian = davinci_fwd_solver_.compute_jacobian(q_ik);
+  dq = Jacobian.inverse()*dp;
+  dq.resize(7);
+  dq.block<1,1>(6,0) = q7;
+
+  q_updated=q_ik+dq;
+  // DEBUGGING
+  // std::cout << std::endl << "BEFORE: " << std::endl << q_ik << std::endl
+  //   << "AFTER: " << std::endl << q_updated << std::endl;
+
+  //see if this is an improvement:
+  double err_xyz,err_dtheta;
+  A_fwd2 = davinci_fwd_solver_.fwd_kin_solve(q_updated);
+  dxyz2 = desired_hand_pose.translation()-A_fwd2.translation();
+
+  R2 = A_fwd2.linear();
+  R_err = R2*R1.transpose();
+  Eigen::AngleAxisd angleAxis2(R_err);  //convert rotation matrix to angle/axis
+  double dtheta2 = angleAxis2.angle();
+  err_dtheta = fabs(dtheta)-fabs(dtheta2); //want this >0
+  err_xyz = dxyz.norm()-dxyz2.norm(); //want this >0
+
+  std::cout << std::endl << "dxyz.norm(): " << dxyz.norm() << std::endl
+    << "dxyz2.norm(): " << dxyz2.norm() << std::endl;
+
+  //only return the updated angles if both position and orientation are improved
+  if ((err_dtheta>0)&&(err_xyz>0)) {
+      q_ik = q_updated; //alter the reference arg w/ updated q angles
+
+      ROS_WARN("Jacobian did improve solution");
+      return true;
+  }
+  else {
+      // ROS_WARN("Jacobian did not improve solution");
+      //leave the q_approx as is; could not improve on it
+      return false;
+    }
+}
+
+int Inverse::ik_solve_refined(Eigen::Affine3d const& desired_hand_pose)
+{
+  Eigen::VectorXd q_ik;
+  int count = 0;
+  const int one = 1;
+  const int two = 2;
+  const int minus_nine = -9;
+
+  if (ik_solve(desired_hand_pose) > 0)
+  {
+    q_ik = get_soln();
+    while (solve_jacobian_ik(desired_hand_pose, q_ik))
+    {
+      ROS_WARN("Jacobian did improve solution AAA");
+      count++;
+    }
+
+    std::cout << std::endl << "IK Refinement Complete!" << std::endl
+      << " after " << count << " rounds." << std::endl;
+
+    q_vec_soln_refined_ = q_ik;
+
+
+    if (count > 0)
+    {
+      return 2;
+    }
+
+    if (count == 0)
+    {
+
+      return 1;
+    }
+
+
+  } else {
+    ROS_ERROR("Cannot get valid initial ik solution!");
+    return -9;
+  }
+
+
+}
+
+
 Eigen::Vector3d Inverse::q123_from_wrist(Eigen::Vector3d wrist_pt)
 {
   // TODO(wsn) There is ambiguitity in that d3 might be negative.

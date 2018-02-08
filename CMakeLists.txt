@@ -77,6 +77,14 @@ target_link_libraries(ik_demo
   ${catkin_LIBRARIES}
 )
 
+add_executable(refined_ik_demo examples/davinci_ik_refined_test.cpp)
+
+target_link_libraries(refined_ik_demo
+  davinci_kinematics
+  davinci_kinematic_definitions
+  ${catkin_LIBRARIES}
+)
+
 
 file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)
 file(GLOB_RECURSE TEST_FILES_CPP test/*.cpp)

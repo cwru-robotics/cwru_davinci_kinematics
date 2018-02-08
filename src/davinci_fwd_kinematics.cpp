@@ -186,15 +186,15 @@ Forward::Forward()
   {
     theta_DH_offsets_(i) = DH_q_offsets[i];
 
-    std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(i): " << theta_DH_offsets_(i)  <<std::endl;
+    // std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(i): " << theta_DH_offsets_(i)  <<std::endl;
   }
   // don't put prismatic displacement here
   // theta_DH_offsets_(2) = 0.0;
   theta_DH_offsets_(2) = 0.0;
-  std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(2): " << theta_DH_offsets_(2)  <<std::endl;
+  // std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(2): " << theta_DH_offsets_(2)  <<std::endl;
 
   dval_DH_offsets_.resize(7);
-  dval_DH_offsets_<< 0, 0.003 , DH_q_offsets[2], 0, 0, 0, 0;
+  dval_DH_offsets_<< 0, -0.003 , DH_q_offsets[2], 0, 0, 0, 0; //RN
 
   // resize MatrixXd Jacobian_ and initialize terms to 0's
   Jacobian_ = Eigen::MatrixXd::Zero(6, 6);

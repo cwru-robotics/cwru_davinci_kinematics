@@ -26,6 +26,7 @@ namespace davinci_kinematics
 const double DH_a1 = 0.0;
 // axis z1,z2 (prismatic) intersect
 const double DH_a2 = -0.001; //RN
+
 // axes z2 (prismatic) and z3 (shaft rot) intersect
 const double DH_a3 = 0.0;
 // axes z3 (shaft rot) and z4 (wrist bend) intersect

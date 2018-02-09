@@ -39,13 +39,15 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 {
   Eigen::Affine3d A_fwd,A_fwd2;
   Eigen::Matrix3d R1,R2,R_err;
-  Eigen::Vector3d dxyz,dphi,dxyz2;
+  Eigen::Vector3d dxyz,dphi;
+  Eigen::Vector3d dxyz2;
   Eigen::VectorXd q7(1);
-  Eigen::VectorXd dp,dq,k_rot_axis,q_updated;
+  Eigen::VectorXd dp,dq,k_rot_axis,q_updated, dq_temp;
   Eigen::MatrixXd Jacobian;
 
   dp.resize(6);
   dq.resize(7);
+  dq_temp.resize(7);
   q_updated.resize(7);
   double dtheta;
 
@@ -66,41 +68,159 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
   dp.block<3,1>(3,0) = dphi;
   Jacobian = davinci_fwd_solver_.compute_jacobian(q_ik);
   dq = Jacobian.inverse()*dp;
+  dq_temp = dq;
   dq.resize(7);
+  dq.block<6,1>(0,0) = dq_temp;
   dq.block<1,1>(6,0) = q7;
 
-  q_updated=q_ik+dq;
-  // DEBUGGING
-  // std::cout << std::endl << "BEFORE: " << std::endl << q_ik << std::endl
-  //   << "AFTER: " << std::endl << q_updated << std::endl;
+
+  std::cout << std::endl << "\e[32m\e[1mEngaging Jacobian IK addon to improve the coarse IK!\e[0m" << std::endl;
+  std::cout << std::endl << "\e[1m\e[94m * q_ik BEFORE updates: \e[0m" << q_ik.transpose() << std::endl;
+  std::cout << " * dxyz.norm(): " << dxyz.norm() << std::endl;
+  std::cout << " * dtheta:      " << dtheta << std::endl;
+
+  double err_xyz = -1;
+  double err_dtheta = -1;
+  int iteration_count = 0;
+  const int iter_max = 10000;
+  bool close_enough = false; // TODO not used yet
+  bool updated = false;
+  int update_count = 0;
+  double translational_tolerance = 0.0001;
+  bool debug_print = true;
 
   //see if this is an improvement:
-  double err_xyz,err_dtheta;
-  A_fwd2 = davinci_fwd_solver_.fwd_kin_solve(q_updated);
-  dxyz2 = desired_hand_pose.translation()-A_fwd2.translation();
+  while ( (iteration_count < iter_max) && (!close_enough) )
+  {
 
-  R2 = A_fwd2.linear();
-  R_err = R2*R1.transpose();
-  Eigen::AngleAxisd angleAxis2(R_err);  //convert rotation matrix to angle/axis
-  double dtheta2 = angleAxis2.angle();
-  err_dtheta = fabs(dtheta)-fabs(dtheta2); //want this >0
-  err_xyz = dxyz.norm()-dxyz2.norm(); //want this >0
+    iteration_count++;
 
-  std::cout << std::endl << "dxyz.norm(): " << dxyz.norm() << std::endl
-    << "dxyz2.norm(): " << dxyz2.norm() << std::endl;
+    // Update q_ik with the current changes.
+    q_updated = q_ik + dq;
 
-  //only return the updated angles if both position and orientation are improved
-  if ((err_dtheta>0)&&(err_xyz>0)) {
-      q_ik = q_updated; //alter the reference arg w/ updated q angles
+    // Calculate the new position the current changes in q_ik would cause
+    A_fwd2 = davinci_fwd_solver_.fwd_kin_solve(q_updated);
 
-      ROS_WARN("Jacobian did improve solution");
-      return true;
-  }
-  else {
-      // ROS_WARN("Jacobian did not improve solution");
-      //leave the q_approx as is; could not improve on it
-      return false;
+    // Calculate the distance form the goal
+    R2 = A_fwd2.linear();
+    R_err = R2*R1.transpose();
+    Eigen::AngleAxisd angleAxis2(R_err);
+    // get dxyz2 and dtheta2
+    dxyz2 = desired_hand_pose.translation()-A_fwd2.translation();
+    double dtheta2 = angleAxis2.angle();
+
+    // See if the distance decrease the gap
+    err_dtheta = fabs(dtheta)-fabs(dtheta2); //want this >0
+    err_xyz = dxyz.norm()-dxyz2.norm(); //want this >0
+
+
+    // If the result is better rebase q_ik and update the Jacobian, dp and dq acoordingly
+    // Otherwise half the dq, use the same base q_ik and try again
+    if ((err_dtheta>0)&&(err_xyz>0)) {
+        updated = true;
+        update_count++;
+
+        if (debug_print)
+        {
+          std::cout << std::endl
+                    // << "------------------------" << std::endl
+                    << "\e[1mITERATION#" << iteration_count << "\e[0m ------------" << std::endl
+                    << "UPDATE#" << update_count << std::endl
+                    << "updating q_ik: " << q_ik.transpose() << std::endl;
+          // std::cout << "Jacobian.inverse()*dp: " << Jacobian.inverse()*dp << std::endl;
+          std::cout << "\e[94m          dq: " << dq.transpose() << " \e[0m " << std::endl;
+        }
+
+        q_ik = q_updated; // q_ik rebased
+
+        if (debug_print)
+        {
+          std::cout << "updated q_ik:  " << q_ik.transpose() << std::endl << std::endl;
+
+          std::cout << "Before THIS update dxyz.norm(): " << dxyz.norm() << std::endl;
+          std::cout << "                          dxyz: " << dxyz.transpose() << std::endl;
+          std::cout << "                 dtheta: " << dtheta << std::endl;
+          std::cout << "                     dp: " << dp.transpose() << std::endl;
+          std::cout << std::endl;
+          // std::cout << "               Jacobian:" << std::endl << Jacobian << std::endl << std::endl;
+          // std::cout << "       Jacobian Inverse:" << std::endl << Jacobian.inverse() << std::endl << std::endl;
+        }
+
+
+        // redo the Jacobian
+        A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_ik);
+
+        R1 = desired_hand_pose.linear();
+        R2 = A_fwd.linear();
+        dxyz = desired_hand_pose.translation()-A_fwd.translation();
+        R_err = R2*R1.transpose();
+        Eigen::AngleAxisd angleAxis(R_err);
+        dtheta = angleAxis.angle();
+        k_rot_axis = angleAxis.axis();
+        dphi = -k_rot_axis*dtheta;
+
+        dp.block<3,1>(0,0) = dxyz;
+        dp.block<3,1>(3,0) = dphi;
+        Jacobian = davinci_fwd_solver_.compute_jacobian(q_ik);
+
+        dq = Jacobian.inverse()*dp;
+        dq.resize(7);
+        dq.block<1,1>(6,0) = q7;
+
+        // see if we have reduced the tranlational error below our tolerance.
+        if (dxyz.norm() < translational_tolerance)
+        {
+          close_enough = true;
+          std::cout << std::endl << "\e[32m\e[1mdxzy has been reduced to below "
+            << translational_tolerance*1000 << " mm \e[0m" <<std::endl;
+        }
+
+        if (debug_print)
+        {
+          std::cout << "After THIS update dxzy.norm():  " << dxyz.norm() << std::endl;
+          std::cout << "                         dxyz:  " << dxyz.transpose() << std::endl;
+          std::cout << "                dtheta:  " << dtheta << std::endl;
+          std::cout << std::endl;
+          // std::cout << "              Jacobian:" << std::endl << Jacobian << std::endl;
+          std::cout << "-------------------------" << std::endl;
+        }
+
+
+    } else {
+
+      dq = dq/2; // then go back to the beginning of this while loop
+
     }
+
+  } // while
+
+  std::cout << std::endl << "Total Iteration count: " << iteration_count << std::endl;
+  std::cout << "The q_ik has been updated for \e[1m\e[34m" << update_count << "\e[0m times" << std::endl;
+  std::cout << "\e[1m\e[94m * q_ik AFTER updates: \e[0m" << q_ik.transpose() << std::endl;
+  // std::cout << " * dxyz2.norm(): " << dxyz2.norm() << std::endl;
+  // std::cout << " * dtheta2:      " << dtheta2 << std::endl;
+
+  if (update_count > 0)
+  {
+    std::cout << std::endl << "\e[1m\e[32mJacobian did improve solution.\e[0m" << std::endl;
+
+    if (dxyz.norm() < translational_tolerance)
+    {
+      std::cout << "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
+        << std::endl;
+    } else
+    {
+      std::cout << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
+    }
+
+    return true;
+  } else if (update_count == 0)
+  {
+    std::cout << std::endl << "\e[31m\e[1mJacobian did NOT improve solution even the slightest..\e[0m" << std::endl
+      << "q_ik unchanged.." << std::endl;
+    return false;
+  }
+
 }
 
 int Inverse::ik_solve_refined(Eigen::Affine3d const& desired_hand_pose)
@@ -111,30 +231,27 @@ int Inverse::ik_solve_refined(Eigen::Affine3d const& desired_hand_pose)
   const int two = 2;
   const int minus_nine = -9;
 
+  bool jacobian_result;
+
+
   if (ik_solve(desired_hand_pose) > 0)
   {
     q_ik = get_soln();
-    while (solve_jacobian_ik(desired_hand_pose, q_ik))
-    {
-      ROS_WARN("Jacobian did improve solution AAA");
-      count++;
-    }
 
-    std::cout << std::endl << "IK Refinement Complete!" << std::endl
-      << " after " << count << " rounds." << std::endl;
+    // std::cout << std::endl << "\e[1mq_ik:     \e[0m" << q_ik.transpose() << std::endl;
+
+    jacobian_result = solve_jacobian_ik(desired_hand_pose, q_ik);
+
+    // std::cout << std::endl << "IK Refinement Complete!" << std::endl;
 
     q_vec_soln_refined_ = q_ik;
 
-
-    if (count > 0)
+    if (jacobian_result == true)
     {
-      return 2;
-    }
-
-    if (count == 0)
-    {
-
       return 1;
+    } else if (jacobian_result == false)
+    {
+      return 0;
     }
 
 

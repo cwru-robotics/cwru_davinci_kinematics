@@ -51,7 +51,9 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
   q_updated.resize(7);
   double dtheta;
 
-  q7 << 0;
+  q7 << q_ik(6);
+
+	std::cout << "DEBUG -- q7: " << q7 << std::endl;
 
   A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_ik);
 

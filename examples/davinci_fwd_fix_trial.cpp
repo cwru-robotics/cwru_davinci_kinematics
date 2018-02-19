@@ -70,13 +70,13 @@ int main(int argc, char **argv)
 
 	q_vec(0) = 0;
 	q_vec(1) = 0;
-  q_vec(2) = 0.21;
+  q_vec(2) = 0.05;
 	q_vec(3) = 0;
 	q_vec(4) = 0;
 	q_vec(5) = 0;
 	q_vec(6) = 0;
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
   	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
@@ -86,12 +86,12 @@ int main(int argc, char **argv)
 
 	  std::cout << "q_vec#" << i+1 << ".affine_wrist_wrt_base.translation():" << std::endl;
   	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
-		std::cout << "q_vec#" << i+1 <<".affine_wrist_wrt_base.linear():" << std::endl;
-		std::cout << affine_wrist_wrt_base.linear() << std::endl << std::endl;
+		// std::cout << "q_vec#" << i+1 <<".affine_wrist_wrt_base.linear():" << std::endl;
+		// std::cout << affine_wrist_wrt_base.linear() << std::endl << std::endl;
 
 		std::cout << "-----------------------------------------" << std::endl;
 
-		q_vec(2) = q_vec(2) - 0.02;
+		q_vec(2) = q_vec(2) + 0.06;
 	
 
 	}

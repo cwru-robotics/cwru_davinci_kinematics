@@ -194,8 +194,14 @@ Forward::Forward()
   // std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(2): " << theta_DH_offsets_(2)  <<std::endl;
 
   dval_DH_offsets_.resize(7);
-  dval_DH_offsets_<< 0, -0.001 , DH_q_offsets[2], 0, 0, 0, 0; //RN
-  
+	// dval_DH_offsets_<< 0, 0 , DH_q_offsets[2], 0, 0, 0, 0;
+  // dval_DH_offsets_<< 0, -0.001 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180214
+  // dval_DH_offsets_<< 0, 0.0013 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180215A1
+  // dval_DH_offsets_<< 0, -0.002 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180216
+	// dval_DH_offsets_<< 0, -0.0034 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180218A1
+	// dval_DH_offsets_<< 0, -0.002784 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180218A2
+  dval_DH_offsets_<< 0, -0.0029 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180219A1
+
   // resize MatrixXd Jacobian_ and initialize terms to 0's
   Jacobian_ = Eigen::MatrixXd::Zero(6, 6);
 }

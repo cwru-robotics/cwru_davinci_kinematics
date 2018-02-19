@@ -30,12 +30,17 @@ int main(int argc, char **argv)
 
   Eigen::Vector3d tip_from_FK, tip_from_FK_of_IK, tip_from_FK_of_refined_IK, tip_err, tip_err_refined;
   // note: with print-outs, takes about 45sec for 10,000 iterations, and got 0 errors
-  for (int itries = 0; itries < 10000; itries++)
+  for (int itries = 0; itries < 1; itries++)
   {
     dvrk_forward.gen_rand_legal_jnt_vals(q_vec);
 
     // std::cout << "using q_vec = " << q_vec.transpose() << std::endl;
+
     // printf("gripper tip frame from FK: \n");
+q_vec << -0.168323, 0.0463498,  0.153502,  0.951687, -0.355543,  -1.25153,    0;
+
+std::cout << "HELLO q_vec: " << q_vec.transpose() << std::endl;
+
     affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
     // std::cout << "affine linear (R): " << std::endl;
     // std::cout << affine_gripper_wrt_base.linear() << std::endl;
@@ -46,6 +51,7 @@ int main(int argc, char **argv)
 
     if (dvrk_inverse.ik_solve(affine_gripper_wrt_base) > 0)
     {
+			// std::cout << "INTO IF.. "<< std::endl;
       // Validate the legal solution.
       entry_count++;
       q_vec_ik = dvrk_inverse.get_soln();

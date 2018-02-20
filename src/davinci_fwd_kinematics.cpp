@@ -62,7 +62,8 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec, Eigen::VectorXd &
 
   dvals_DH_vec.resize(7);
   dvals_DH_vec = dval_DH_offsets_;
-  dvals_DH_vec(2) += q_vec(2);
+  // dvals_DH_vec(2) += q_vec(2); // RN original
+	dvals_DH_vec(2) += 0.99*q_vec(2); // RN 20180220  (TODO adjust DH_a1 at the same time!)
   // dvals_DH_vec(1) += q_vec(2);
 }
 
@@ -105,6 +106,9 @@ double Forward::dh_var_to_qvec(double dh_val, int index)
   return (dh_val - DH_q_offsets[index]);
 }
 
+
+
+// RN TODO deal with that .99 sacle factor
 //    Eigen::VectorXd thetas_DH_vec_,dvals_DH_vec_;
 Vectorq7x1 Forward::convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec,
   const Eigen::VectorXd &dvals_DH_vec)
@@ -233,11 +237,11 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::Ve
   }
   affine_gripper_wrt_base_ = affine_products_[6] * affine_gripper_wrt_frame6_;
 
-  // added for wrist pt coordinate w/rt base frame
+  // RN added for wrist pt coordinate w/rt base frame
   affine_wrist_wrt_base_ = affine_products_[2];
 }
 
-Eigen::Affine3d Forward::get_wrist_wrt_base()
+Eigen::Affine3d Forward::get_wrist_wrt_base() // RN
 {
   return affine_wrist_wrt_base_;
 }

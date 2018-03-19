@@ -96,6 +96,140 @@ int main(int argc, char **argv)
 
 	}
 
+	std::cout << "----------------RANDOM-POINTS--------------" << std::endl;
+
+	std::cout << "-------PT01---------" << std::endl;
+	q_vec(0) = -1.0800;
+	q_vec(1) = -0.6600;
+  q_vec(2) =  0.0842;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT02---------" << std::endl;
+	q_vec(0) = 1.3500;
+	q_vec(1) = 0.3000;
+  q_vec(2) = 0.1166;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT03---------" << std::endl;
+	q_vec(0) = 1.3800;
+	q_vec(1) = 0.4800;
+  q_vec(2) = 0.1634;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT04---------" << std::endl;
+	q_vec(0) = 0.2400;
+	q_vec(1) = 0.3000;
+  q_vec(2) = 0.1922;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT05---------" << std::endl;
+	q_vec(0) = -1.3200;
+	q_vec(1) = -0.0800;
+  q_vec(2) =  0.0662;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT06---------" << std::endl;
+	q_vec(0) = -0.7800;
+	q_vec(1) =  0.1000;
+  q_vec(2) =  0.2174;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT07---------" << std::endl;
+	q_vec(0) = -0.4200;
+	q_vec(1) = -0.4000;
+  q_vec(2) =  0.1904;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT08---------" << std::endl;
+	q_vec(0) = 0.9900;
+	q_vec(1) = 0.5000;
+  q_vec(2) = 0.1382;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT09---------" << std::endl;
+	q_vec(0) = -1.4400;
+	q_vec(1) = -0.6200;
+  q_vec(2) =  0.1292;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+	std::cout << "-------PT10---------" << std::endl;
+	q_vec(0) = -1.3500;
+	q_vec(1) =  0.3800;
+  q_vec(2) =  0.1310;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
+
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
+
+
+
 
 
 

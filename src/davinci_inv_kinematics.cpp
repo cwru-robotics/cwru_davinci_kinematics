@@ -75,11 +75,12 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
   dq.block<6,1>(0,0) = dq_temp;
   dq.block<1,1>(6,0) = q7;
 
+	bool debug_print_1 = false;
 
-  std::cout << std::endl << "\e[32m\e[1mEngaging Jacobian IK addon to improve the coarse IK!\e[0m" << std::endl;
-  std::cout << std::endl << "\e[1m\e[94m * q_ik BEFORE updates: \e[0m" << q_ik.transpose() << std::endl;
-  std::cout << " * dxyz.norm(): " << dxyz.norm() << std::endl;
-  std::cout << " * dtheta:      " << dtheta << std::endl;
+  if (debug_print_1) std::cout << std::endl << "\e[32m\e[1mEngaging Jacobian IK addon to improve the coarse IK!\e[0m" << std::endl;
+  if (debug_print_1)  std::cout << std::endl << "\e[1m\e[94m * q_ik BEFORE updates: \e[0m" << q_ik.transpose() << std::endl;
+  if (debug_print_1) std::cout << " * dxyz.norm(): " << dxyz.norm() << std::endl;
+  if (debug_print_1) std::cout << " * dtheta:      " << dtheta << std::endl;
 
   double err_xyz = -1;
   double err_dtheta = -1;
@@ -89,7 +90,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
   bool updated = false;
   int update_count = 0;
   double translational_tolerance = 0.0001;
-  bool debug_print = true;
+  bool debug_print = false;
 
   //see if this is an improvement:
   while ( (iteration_count < iter_max) && (!close_enough) )
@@ -196,29 +197,33 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
   } // while
 
+
+	if (debug_print)
+	{
   std::cout << std::endl << "Total Iteration count: " << iteration_count << std::endl;
   std::cout << "The q_ik has been updated for \e[1m\e[34m" << update_count << "\e[0m times" << std::endl;
   std::cout << "\e[1m\e[94m * q_ik AFTER updates: \e[0m" << q_ik.transpose() << std::endl;
   // std::cout << " * dxyz2.norm(): " << dxyz2.norm() << std::endl;
   // std::cout << " * dtheta2:      " << dtheta2 << std::endl;
+	}
 
   if (update_count > 0)
   {
-    std::cout << std::endl << "\e[1m\e[32mJacobian did improve solution.\e[0m" << std::endl;
+    if (debug_print) std::cout << std::endl << "\e[1m\e[32mJacobian did improve solution.\e[0m" << std::endl;
 
     if (dxyz.norm() < translational_tolerance)
     {
-      std::cout << "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
+      if (debug_print) std::cout << "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
         << std::endl;
     } else
     {
-      std::cout << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
+      if (debug_print) std::cout << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
     }
 
     return true;
   } else if (update_count == 0)
   {
-    std::cout << std::endl << "\e[31m\e[1mJacobian did NOT improve solution even the slightest..\e[0m" << std::endl
+    if (debug_print) std::cout << std::endl << "\e[31m\e[1mJacobian did NOT improve solution even the slightest..\e[0m" << std::endl
       << "q_ik unchanged.." << std::endl;
     return false;
   }

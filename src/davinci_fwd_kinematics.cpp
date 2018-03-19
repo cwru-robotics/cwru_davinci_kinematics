@@ -62,9 +62,13 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec, Eigen::VectorXd &
 
   dvals_DH_vec.resize(7);
   dvals_DH_vec = dval_DH_offsets_;
-  // dvals_DH_vec(2) += q_vec(2); // RN original
-	dvals_DH_vec(2) += 0.99*q_vec(2); // RN 20180220  (TODO adjust DH_a1 at the same time!)
-  // dvals_DH_vec(1) += q_vec(2);
+  dvals_DH_vec(2) += q_vec(2); // RN original
+	// dvals_DH_vec(2) += 0.988*q_vec(2); // RN 20180220  (TODO adjust DH_a1 at the same time!)
+  //dvals_DH_vec(1) += q_vec(2);
+
+	// dvals_DH_vec(2) += 0.98*q_vec(2); // RN 20180319A2
+
+
 }
 
 int Forward::check_jnts(const Vectorq7x1& q_vec)
@@ -204,7 +208,12 @@ Forward::Forward()
   // dval_DH_offsets_<< 0, -0.002 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180216
 	// dval_DH_offsets_<< 0, -0.0034 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180218A1
 	// dval_DH_offsets_<< 0, -0.002784 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180218A2
-  dval_DH_offsets_<< 0, -0.0029 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180219A1
+  // dval_DH_offsets_<< 0, -0.002986 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180219A1  
+  // dval_DH_offsets_<< 0, -0.0030 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180222A1 GOOD
+	 dval_DH_offsets_<< 0, -0.0031 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180319 GOOD <<
+
+// dval_DH_offsets_<< 0, -0.001 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180319PSM2A1
+
 
   // resize MatrixXd Jacobian_ and initialize terms to 0's
   Jacobian_ = Eigen::MatrixXd::Zero(6, 6);

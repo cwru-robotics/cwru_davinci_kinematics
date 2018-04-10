@@ -292,7 +292,7 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
 
   q7 << q_frozen_ik(6);
 
-  // q_frozen_ik should have the last 4 all 0s.
+  // q_frozen_ik SHOULD have the last 4 all 0s.
   A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_frozen_ik);
 
   // TODO not sure correct or not tho
@@ -315,7 +315,7 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
   double err_dtheta = -1;
   int iteration_count = 0;
   const int iter_max = 10000;
-  bool close_enough = false; // TODO not used yet
+  bool close_enough = false;
   bool updated = false;
   int update_count = 0;
   double translational_tolerance = 0.0001;
@@ -357,10 +357,10 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
       dq(5) = 0;
       dq(6) = 0;
 
-      // see if we have reduced the tranlational error below our tolerance.
+      // see if we have reduced the TRANSLATION error to below our tolerance.
       if (dxyz.norm() < translational_tolerance) {
         close_enough = true;
-        std::cout << std::endl << "\e[32m\e[1mdxzy has been reduced to below "
+        std::cout << std::endl << "\e[32m\e[1mFROZEN dxzy has been reduced to below "
                   << translational_tolerance * 1000 << " mm \e[0m" << std::endl;
       }
 
@@ -398,20 +398,48 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
 int Inverse::ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate){
   Eigen::Vector3d q123;
   Eigen::VectorXd q_frozen_ik;
+
+  Eigen::VectorXd theta_vec, d_vec;
+  Vectorq7x1 qvec;
+
+  Eigen::Affine3d desired_wrist_pose;
+  Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
+
+
+
   q_frozen_ik.resize(7);
 
   bool jacobian_result;
 
-  Eigen::Vector3d desired_wrist_coordinate;
+  Eigen::Vector3d desired_wrist_coordinate, desired_wrist_coordinate_wrt_frame_0;
   desired_wrist_coordinate = desired_tip_coordinate * (1 - (gripper_jaw_length/desired_tip_coordinate.norm()));
+
+  desired_wrist_pose.translation() = desired_wrist_coordinate;
+  desired_wrist_pose = affine_frame0_wrt_base.inverse() * desired_wrist_pose;
+  desired_wrist_coordinate_wrt_frame_0 = desired_wrist_pose.translation();
 
   std::cout << "gripper_jaw_length: " << gripper_jaw_length << std::endl;
 
-  std::cout << "desired_wrist_coordinate: \n" << desired_wrist_coordinate << std::endl;
+  std::cout << "desired_wrist_coordinate w/rt Base frame: \n" << desired_wrist_coordinate << std::endl;
 
-  q123 = q123_from_wrist(desired_wrist_coordinate);
+  std::cout << "desired_wrist_coordinate_wrt_frame_0: \n" << desired_wrist_coordinate_wrt_frame_0 << std::endl;
 
+  //q123 = q123_from_wrist(desired_wrist_coordinate); // wrong! Do not use pose wrt base use pose wrt frame 0 intead...
+
+  q123 = q123_from_wrist(desired_wrist_coordinate_wrt_frame_0);
   std::cout << "q123:  \n" << q123 << std::endl;
+
+  // get DH vecs from q123
+  theta_vec.resize(7);
+  theta_vec << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+  theta_vec(0) = q123(0);
+  theta_vec(1) = q123(1);
+  d_vec.resize(7);
+  d_vec << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+  d_vec(2) = q123(2);
+
+  qvec = convert_DH_vecs_to_qvec(theta_vec, d_vec);
+  std::cout << "qvec: (converted from DH vecs) \n" << qvec << std::endl;
 
   q_frozen_ik.block<3,1>(0,0) = q123;
 
@@ -426,6 +454,10 @@ int Inverse::ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordina
 
   if (jacobian_result == true)
   {
+
+    ROS_WARN("DEBUG: q_vec_frozen_ik_refined:");
+    std::cout << q_vec_soln_frozon_ik_refined_ << std::endl;
+
     return 1;
   } else if (jacobian_result == false)
   {
@@ -612,6 +644,11 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
 {
   // before doing anything else, premultiply to get everything in terms of the base.
   Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
+
+  ROS_WARN("DEBUG");
+  std::cout << "affine_frame0_wrt_base: \n" << affine_frame0_wrt_base.translation() << std::endl;
+  std::cout << affine_frame0_wrt_base.linear() << std::endl;
+
   desired_hand_pose_ = affine_frame0_wrt_base.inverse() * desired_hand_pose;
   // desired_hand_pose_ = desired_hand_pose;
 
@@ -687,6 +724,11 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
   // TODO(rcj, wsn) If possible resolve the ambiguity in compute_w_from_tip.
   Eigen::Vector3d w_wrt_base[2];
   Eigen::Vector3d z_vec4[2];
+
+  ROS_WARN("DEBUG DEBUG");
+  std::cout << "desired_hand_pose: \n" << desired_hand_pose.translation() << std::endl;
+  std::cout << "desired_hand_pose_: \n" << desired_hand_pose_.translation() << std::endl;
+
   compute_w_from_tip(desired_hand_pose_, z_vec4[0], z_vec4[1], w_wrt_base[0], w_wrt_base[1]);
 
   // next step: get theta1, theta2, d3 soln from wrist position:
@@ -701,12 +743,17 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     int index_2(index >> 1);
     int index_1(index % 2);
 
+
+
     Eigen::Vector3d q123(q123_from_wrist(w_wrt_base[index_1]));
 
     Vectorq7x1 q_sol_p = compute_q456(q123, z_vec4[index_2]);
 
     ROS_INFO("RNRNRN q123: ");
-    std::cout << q123 << std::endl;
+    std::cout << "index: " << index << std::endl;
+    std::cout << "index_1: " << index_1 << std::endl;
+    std::cout << "w_wrt_base[index_1]: \n" << w_wrt_base[index_1] << std::endl;
+    std::cout << "q123: \n" << q123 << std::endl;
     std::cout << "q_sol_p: \n" << q_sol_p << std::endl;
 
     if (fit_joints_to_range(q_sol_p))
@@ -826,7 +873,8 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
   affine_frame_wrt_base = get_affine_frame(3);
 
    ROS_WARN("RN debug 002:");
-   std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1) << std::endl;
+   std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1)
+             << " theta_vec(2): " << theta_vec(2) <<std::endl;
 
   // compute transform frame 6 wrt frame 4:
   // A_{g/base} = A_{4/base}*A_{6/4}*A_{g/6}

@@ -28,6 +28,7 @@ int main(int argc, char **argv)
 
   Eigen::Affine3d affine_wrist_wrt_base, affine_gripper_wrt_base, affine_frame_wrt_base, affine_gripper_wrt_base1;
   Eigen::Affine3d affine_wrist_wrt_base2, affine_gripper_wrt_base2, affine_frame_wrt_base2;
+  Eigen::Affine3d affine_gripper_wrt_base_frozen;
   // wait to start receiving valid tf transforms
 
   Eigen::Vector3d tip_from_FK, tip_from_FK_of_IK, tip_from_FK_of_refined_IK, tip_err, tip_err_refined;
@@ -47,9 +48,9 @@ int main(int argc, char **argv)
     // std::cout << "affine linear (R): " << std::endl;
     // std::cout << affine_gripper_wrt_base.linear() << std::endl;
     tip_from_FK = affine_gripper_wrt_base.translation();
-    // std::cout << "origin: " << tip_from_FK.transpose() << std::endl;
-    // std::cout << std::endl;
-    // std::cout << std::endl;
+     std::cout << "origin: " << tip_from_FK.transpose() << std::endl;
+     std::cout << std::endl;
+     std::cout << std::endl;
 
     if (dvrk_inverse.ik_solve(affine_gripper_wrt_base) > 0)
     {
@@ -128,7 +129,7 @@ int main(int argc, char **argv)
 
     tip_coordinate = tip_from_FK;
 
-    std::cout << "tip_coordinate: " << tip_coordinate << std::endl;
+    std::cout << "tip_coordinate: \n" << tip_coordinate << std::endl;
 
     std::cout << "solving frozen IK for this tip coordinate.. \n";
 
@@ -136,8 +137,16 @@ int main(int argc, char **argv)
 
     q_vec_frozen_ik_refined = dvrk_inverse.get_soln_frozon_ik_refined();
 
-    std::cout << "q_vec_frozen_ik_refined: " << q_vec_frozen_ik_refined << std::endl;
+    std::cout << "q_vec_frozen_ik_refined: \n" << q_vec_frozen_ik_refined << std::endl;
 
+    affine_gripper_wrt_base_frozen = dvrk_forward.fwd_kin_solve(q_vec_frozen_ik_refined);
+
+
+    std::cout << "TARGET FROZEN tip_coordinate: \n" << tip_coordinate << std::endl << std::endl;
+    std::cout << "affine_gripper_wrt_base_frozen.translation: \n" << affine_gripper_wrt_base_frozen.translation() << std::endl;
+    std::cout << "affine_gripper_wrt_base_frozen.linear: \n" << affine_gripper_wrt_base_frozen.linear() << std::endl << std::endl;
+    std::cout << "affine_gripper_wrt_base.translation: \n" << affine_gripper_wrt_base.translation() << std::endl;
+    std::cout << "affine_gripper_wrt_base.linear: \n" << affine_gripper_wrt_base.linear() << std::endl;
   }
 
 

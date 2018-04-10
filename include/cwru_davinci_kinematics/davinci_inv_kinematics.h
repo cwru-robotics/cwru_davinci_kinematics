@@ -68,6 +68,7 @@ public:
   int ik_solve_refined(Eigen::Affine3d const& desired_hand_pose);
   bool solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen::VectorXd &q_ik);
   int ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate);
+  int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose);
   bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate, Eigen::VectorXd &q_ik);
 
 

@@ -472,6 +472,23 @@ int Inverse::ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordina
 
 }
 
+/// In order to be used directly by other packages that use old formats
+/// This wrapper of the ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate) is created
+int Inverse::ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose){
+
+  int result;
+
+  Eigen::Vector3d desired_tip_coordinate_from_pose;
+
+  // It takes only the coordinate of the pose the orientaion is discarded.
+  desired_tip_coordinate_from_pose = desired_hand_pose.translation();
+
+  result = ik_solve_frozen_refined(desired_tip_coordinate_from_pose);
+  // the q_vec_soln_frozon_ik_refined_ can be obtained by get_soln_frozon_ik_refined()
+  return result;
+
+}
+
 
 
 Eigen::Vector3d Inverse::q123_from_wrist(Eigen::Vector3d wrist_pt)

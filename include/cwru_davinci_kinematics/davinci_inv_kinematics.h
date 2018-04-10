@@ -67,6 +67,9 @@ public:
   // RN
   int ik_solve_refined(Eigen::Affine3d const& desired_hand_pose);
   bool solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen::VectorXd &q_ik);
+  int ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate);
+  bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate, Eigen::VectorXd &q_ik);
+
 
   /**
    * @brief get the properly computed (and validated) solution.
@@ -82,6 +85,13 @@ public:
   Vectorq7x1 get_soln_refined() const
   {
     return q_vec_soln_refined_;
+  };
+
+
+  // RN
+  Vectorq7x1 get_soln_frozon_ik_refined() const
+  {
+    return q_vec_soln_frozon_ik_refined_;
   };
 
   /**
@@ -191,6 +201,11 @@ private:
    * RN
    */
   Vectorq7x1 q_vec_soln_refined_;
+
+  /**
+   * RN
+   */
+  Vectorq7x1 q_vec_soln_frozon_ik_refined_;
 
   /**
    * @brief The stored desired pose for which the inverse kinematics has been most recently completed

@@ -15,7 +15,9 @@ int main(int argc, char **argv)
 
   Eigen::Vector3d w_wrt_base, q123;
 
-  davinci_kinematics::Vectorq7x1 q_vec, err_vec, q_vec_ik, q_vec_ik_refined;
+  Eigen::Vector3d tip_coordinate;
+
+  davinci_kinematics::Vectorq7x1 q_vec, err_vec, q_vec_ik, q_vec_ik_refined, q_vec_frozen_ik_refined;
   davinci_kinematics::Vectorq7x1 err_vec_refined_ik;
   q_vec << 0, 0, 0, 0, 0, 0, 0;
   int err_cnt = 0;
@@ -37,9 +39,9 @@ int main(int argc, char **argv)
     // std::cout << "using q_vec = " << q_vec.transpose() << std::endl;
 
     // printf("gripper tip frame from FK: \n");
-q_vec << -0.168323, 0.0463498,  0.153502,  0.951687, -0.355543,  -1.25153,    0;
+    q_vec << -0.168323, 0.0463498,  0.153502,  0.951687, -0.355543,  -1.25153,    0;
 
-std::cout << "HELLO q_vec: " << q_vec.transpose() << std::endl;
+    std::cout << "HELLO q_vec: " << q_vec.transpose() << std::endl;
 
     affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
     // std::cout << "affine linear (R): " << std::endl;
@@ -122,6 +124,19 @@ std::cout << "HELLO q_vec: " << q_vec.transpose() << std::endl;
 
 
     }
+
+
+    tip_coordinate = tip_from_FK;
+
+    std::cout << "tip_coordinate: " << tip_coordinate << std::endl;
+
+    std::cout << "solving frozen IK for this tip coordinate.. \n";
+
+    dvrk_inverse.ik_solve_frozen_refined(tip_coordinate);
+
+    q_vec_frozen_ik_refined = dvrk_inverse.get_soln_frozon_ik_refined();
+
+    std::cout << "q_vec_frozen_ik_refined: " << q_vec_frozen_ik_refined << std::endl;
 
   }
 

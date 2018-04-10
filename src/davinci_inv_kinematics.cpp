@@ -271,6 +271,173 @@ int Inverse::ik_solve_refined(Eigen::Affine3d const& desired_hand_pose)
 }
 
 
+bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate,
+                                       Eigen::VectorXd &q_frozen_ik){
+  Eigen::Affine3d A_fwd,A_fwd2;
+  Eigen::Matrix3d R1,R2,R_err;
+  Eigen::Vector3d dxyz,dphi,dq123;
+  Eigen::Vector3d dxyz2;
+  Eigen::VectorXd q7(1);
+  Eigen::VectorXd dp,dq,k_rot_axis,q_updated, dq_temp;
+  Eigen::MatrixXd Jacobian;
+
+  // The upper left 3x3 of the original 6x6 Jacobian
+  Eigen::Matrix3d Jacobian_3x3;
+
+  dp.resize(6);
+  dq.resize(7);
+  dq_temp.resize(7);
+  q_updated.resize(7);
+  double dtheta;
+
+  q7 << q_frozen_ik(6);
+
+  // q_frozen_ik should have the last 4 all 0s.
+  A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_frozen_ik);
+
+  // TODO not sure correct or not tho
+  // care only about dxyz, ignore the angular error.
+  dxyz = desired_tip_coordinate - A_fwd.translation();
+
+  Jacobian = davinci_fwd_solver_.compute_jacobian(q_frozen_ik);
+  Jacobian_3x3 = Jacobian.block<3,3>(0,0);
+
+  dq123 = Jacobian_3x3.inverse()*dxyz;
+
+  dq.resize(7);
+  dq.block<3,1>(0,0) = dq123;
+  dq(3) = 0;
+  dq(4) = 0;
+  dq(5) = 0;
+  dq(6) = 0;
+
+  double err_xyz = -1;
+  double err_dtheta = -1;
+  int iteration_count = 0;
+  const int iter_max = 10000;
+  bool close_enough = false; // TODO not used yet
+  bool updated = false;
+  int update_count = 0;
+  double translational_tolerance = 0.0001;
+  bool debug_print = false;
+
+  while ( (iteration_count < iter_max) && (!close_enough) ) {
+
+    iteration_count++;
+    // Update q_ik with the current changes. q_updated should still have its 4 - 7 all 0s.
+    q_updated = q_frozen_ik + dq;
+
+    // Calculate the new position the current changes in q_ik would cause
+    A_fwd2 = davinci_fwd_solver_.fwd_kin_solve(q_updated);
+
+    dxyz2 = desired_tip_coordinate - A_fwd2.translation();
+
+    err_xyz = dxyz.norm() - dxyz2.norm(); //want this >0
+
+    if (err_xyz > 0) {
+
+      updated = true;
+      update_count++;
+
+      q_frozen_ik = q_updated; // q_frozen_ik rebased
+
+      // redo the Jacobian
+      A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_frozen_ik);
+
+      dxyz = desired_tip_coordinate - A_fwd.translation();
+
+      Jacobian = davinci_fwd_solver_.compute_jacobian(q_frozen_ik);
+      Jacobian_3x3 = Jacobian.block<3, 3>(0, 0);
+      dq123 = Jacobian_3x3.inverse() * dxyz;
+
+      dq.resize(7); // not necessary...
+      dq.block<3, 1>(0, 0) = dq123;
+      dq(3) = 0;
+      dq(4) = 0;
+      dq(5) = 0;
+      dq(6) = 0;
+
+      // see if we have reduced the tranlational error below our tolerance.
+      if (dxyz.norm() < translational_tolerance) {
+        close_enough = true;
+        std::cout << std::endl << "\e[32m\e[1mdxzy has been reduced to below "
+                  << translational_tolerance * 1000 << " mm \e[0m" << std::endl;
+      }
+
+    } else {
+      dq = dq / 2; // then go back to the beginning of this while loop
+    }
+
+  } // while
+
+
+    if (update_count > 0)
+    {
+
+      if (dxyz.norm() < translational_tolerance)
+      {
+        std::cout << "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
+                                   << std::endl;
+      } else
+      {
+        std::cout << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
+      }
+
+      return true;
+    } else if (update_count == 0)
+    {
+      std::cout << std::endl << "\e[31m\e[1mJacobian did NOT improve solution even the slightest..\e[0m" << std::endl
+                                 << "q_ik unchanged.." << std::endl;
+      return false;
+    }
+
+}
+
+
+
+int Inverse::ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate){
+  Eigen::Vector3d q123;
+  Eigen::VectorXd q_frozen_ik;
+  q_frozen_ik.resize(7);
+
+  bool jacobian_result;
+
+  Eigen::Vector3d desired_wrist_coordinate;
+  desired_wrist_coordinate = desired_tip_coordinate * (1 - (gripper_jaw_length/desired_tip_coordinate.norm()));
+
+  std::cout << "gripper_jaw_length: " << gripper_jaw_length << std::endl;
+
+  std::cout << "desired_wrist_coordinate: \n" << desired_wrist_coordinate << std::endl;
+
+  q123 = q123_from_wrist(desired_wrist_coordinate);
+
+  std::cout << "q123:  \n" << q123 << std::endl;
+
+  q_frozen_ik.block<3,1>(0,0) = q123;
+
+  q_frozen_ik(3) = 0;
+  q_frozen_ik(4) = 0;
+  q_frozen_ik(5) = 0;
+  q_frozen_ik(6) = 0;
+
+  jacobian_result = solve_jacobian_frozen_ik(desired_tip_coordinate, q_frozen_ik);
+
+  q_vec_soln_frozon_ik_refined_ = q_frozen_ik;
+
+  if (jacobian_result == true)
+  {
+    return 1;
+  } else if (jacobian_result == false)
+  {
+    return 0;
+  }
+
+
+
+}
+
+
+
 Eigen::Vector3d Inverse::q123_from_wrist(Eigen::Vector3d wrist_pt)
 {
   // TODO(wsn) There is ambiguitity in that d3 might be negative.
@@ -364,6 +531,11 @@ void Inverse::compute_w_from_tip(Eigen::Affine3d affine_gripper_tip,
 
   sol_O4a = origin_5 - dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*xvec_5;
   sol_O4b = origin_5 + dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*xvec_5;
+
+  // RN debug
+  ROS_WARN("RN DEBUG");
+  std::cout << "sol_O4a: \n" << sol_O4a << std::endl;
+  std::cout << "sol_O4b: \n" << sol_O4b << std::endl;
 
   // possible error here: need to get sign of xvec_5 correct.
   // given O_4 and O_5, should have xvec_5 point from O_4 towards O_5
@@ -530,7 +702,12 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     int index_1(index % 2);
 
     Eigen::Vector3d q123(q123_from_wrist(w_wrt_base[index_1]));
+
     Vectorq7x1 q_sol_p = compute_q456(q123, z_vec4[index_2]);
+
+    ROS_INFO("RNRNRN q123: ");
+    std::cout << q123 << std::endl;
+    std::cout << "q_sol_p: \n" << q_sol_p << std::endl;
 
     if (fit_joints_to_range(q_sol_p))
     {
@@ -603,7 +780,7 @@ Eigen::Vector3d Inverse::compute_fk_wrist(Eigen::Vector3d q123)
 }
 
 Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
-{
+ {
   Eigen::Affine3d affine_frame_wrt_base, affine_frame6_wrt_4, affine_frame6_wrt_5, fk_gripper_frame;
   Eigen::Vector3d z4_wrt_3, O_6_wrt_4, xvec6_wrt_5;
   Eigen::VectorXd theta_vec, d_vec;
@@ -613,8 +790,13 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
 
   theta_vec.resize(7);
   theta_vec << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
   theta_vec(0) = q123(0);
   theta_vec(1) = q123(1);
+
+  ROS_WARN("RN debug 001:");
+  std::cout << "q123: \n" << q123 << std::endl;
+  std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1) << std::endl;
 
   d_vec.resize(7);
   d_vec << 0, 0, 0, 0, 0, 0, 0;
@@ -642,6 +824,9 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
   fwd_kin_solve_DH(theta_vec, d_vec);
   // get frame 4, which depends on 1st 4 vars:
   affine_frame_wrt_base = get_affine_frame(3);
+
+   ROS_WARN("RN debug 002:");
+   std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1) << std::endl;
 
   // compute transform frame 6 wrt frame 4:
   // A_{g/base} = A_{4/base}*A_{6/4}*A_{g/6}

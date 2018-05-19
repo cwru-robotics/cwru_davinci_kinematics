@@ -90,7 +90,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
   bool updated = false;
   int update_count = 0;
   double translational_tolerance = 0.0001;
-  bool debug_print = false;
+  bool debug_print = true;
 
   //see if this is an improvement:
   while ( (iteration_count < iter_max) && (!close_enough) )
@@ -119,7 +119,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
     // If the result is better rebase q_ik and update the Jacobian, dp and dq acoordingly
     // Otherwise half the dq, use the same base q_ik and try again
-    if ((err_dtheta>0)&&(err_xyz>0)) {
+    if ((err_dtheta>0)||(err_xyz>0)) {
         updated = true;
         update_count++;
 
@@ -191,6 +191,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
     } else {
 
+      // std::cout << "(err_dtheta>0)&&(err_xyz>0) failed." << std::endl;
       dq = dq/2; // then go back to the beginning of this while loop
 
     }
@@ -780,6 +781,11 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     if (fit_joints_to_range(q_sol_p))
     {
       q_sol.push_back(q_sol_p);
+
+      // TODO delete after debugging
+      // ROS_WARN("fit_joints_to_range No: %d", index);
+      // std::cout << "q_sol_p: " << q_sol_p.transpose() << std::endl;
+
       // compute the numerical errors.
       Eigen::Affine3d affine_test_fk = fwd_kin_solve(q_sol_p);
       Eigen::Matrix3d fwd_inv = affine_test_fk.rotation() * desired_hand_pose_.rotation().inverse();
@@ -790,6 +796,9 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     else
     {
       q_fail.push_back(q_sol_p);
+      // TODO delete after debugging
+      // ROS_WARN("q_fail.push_back(q_sol_p) No: %d", index);
+      // std::cout << "q_sol_p: " << q_sol_p.transpose() << std::endl;
     }
   }
 

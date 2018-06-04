@@ -118,6 +118,12 @@ public:
   using Forward::set_gripper_jaw_length;
 
 private:
+
+    bool debug_print = false;
+    bool debug_print_1 = false;
+
+
+
   Forward davinci_fwd_solver_;
 
   /**

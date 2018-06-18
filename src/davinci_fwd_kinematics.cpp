@@ -208,12 +208,12 @@ Forward::Forward()
   // dval_DH_offsets_<< 0, -0.002 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180216
 	// dval_DH_offsets_<< 0, -0.0034 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180218A1
 	// dval_DH_offsets_<< 0, -0.002784 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180218A2
-  // dval_DH_offsets_<< 0, -0.002986 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180219A1  
+  // dval_DH_offsets_<< 0, -0.002986 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180219A1
   // dval_DH_offsets_<< 0, -0.0030 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180222A1 GOOD
 	// dval_DH_offsets_<< 0, -0.0031 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180319 GOOD <<
 
 // dval_DH_offsets_<< 0, -0.001 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180319PSM2A1
-dval_DH_offsets_<< 0, 0 , -0.00074152, 0, 0, 0, 0;
+dval_DH_offsets_<< 0, -0.00074152, DH_q_offsets[2], 0, 0, 0, 0; // RN 20180618A1 PSM2
 
 
   // resize MatrixXd Jacobian_ and initialize terms to 0's

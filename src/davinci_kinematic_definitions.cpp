@@ -34,7 +34,10 @@ namespace davinci_kinematics
 // const double DH_a1 = 0.0086; //RN 20180220A2	
 // const double DH_a1 = -0.001; //RN 20180222A3
 // const double DH_a1 = 0.0059; //RN 20180319A1
-const double DH_a1 = 0.0034; // RN 20180618A1 PSM2
+// const double DH_a1 = 0.0034; // RN 20180618A1 PSM2
+const double DH_a1 = 0.0050323; // RN 20180618A2 PSM2
+
+
 
 // axis z1,z2 (prismatic) intersect
 // const double DH_a2 = 0.00;
@@ -48,8 +51,8 @@ const double DH_a1 = 0.0034; // RN 20180618A1 PSM2
 // const double DH_a2 = 0.0010; // RN 20180319A2
 
 // const double DH_a2 = 0.0000; // RN 20180319PSM2A1
-const double DH_a2 =  0.00069212; // RN 20180618A1 PSM2 
-
+// const double DH_a2 =  0.00069212; // RN 20180618A1 PSM2 
+const double DH_a2 =  0.00015199; // RN 20180618A2 PSM2 
 
 // axes z2 (prismatic) and z3 (shaft rot) intersect
 const double DH_a3 = 0.0;
@@ -74,11 +77,14 @@ const double DH_a7 = 0.0;
 // robot.DH.alpha= '[-pi/2 0 -pi/2 pi/2 -pi/2 0]';
 
 
-const double DH_alpha1 = M_PI/2.0;
+// const double DH_alpha1 = M_PI/2.0;
 // const double DH_alpha1 =  1.5774; // RN 20180218A1
 // const double DH_alpha1 =  1.5644206; // RN 20180218A2 << GOOD
 
 // const double DH_alpha1 =  1.5765; // RN 20180319PSM2A1
+
+const double DH_alpha1 = 1.5672; // RN 20180618A2 PSM2
+
 
 // const double DH_alpha2 = M_PI/2.0;
 // const double DH_alpha2 = M_PI/2.0 - 0.0194; // RN 20180218A1
@@ -88,7 +94,9 @@ const double DH_alpha1 = M_PI/2.0;
 // const double DH_alpha2 = 1.5507; // RN 20180319A2 
 
 // const double DH_alpha2 = 1.5585; // RN 20180319PSM2A1
-const double DH_alpha2 = 1.5594; // RN 20180618A1 PSM2 
+// const double DH_alpha2 = 1.5594; // RN 20180618A1 PSM2 
+const double DH_alpha2 =  1.5697; // RN 20180618A2 PSM2 
+
 
 // prismatic axis is aligned with tool-shaft spin axis
 const double DH_alpha3 = 0.0;
@@ -121,8 +129,8 @@ const double DH_q_offset0 = 0.0;
 // const double DH_q_offset1 = 1.5699; // RN 20180319A2 
 
 // const double DH_q_offset1 = 1.5919; // RN 20180319PSM2A1 
-const double DH_q_offset1 =  1.5854; // RN 20180618A1 PSM2
-
+// const double DH_q_offset1 =  1.5854; // RN 20180618A1 PSM2
+const double DH_q_offset1 =  1.5869; // RN 20180618A2 PSM2
 
 
 // erdem IK tested, sign is negative. q3 should be larger than abs(insertion_offset)

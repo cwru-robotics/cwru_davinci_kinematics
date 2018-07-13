@@ -540,6 +540,12 @@ Eigen::Vector3d Inverse::q123_from_wrist(Eigen::Vector3d wrist_pt)
   q123(1) = theta2;
   q123(2) = d3;
 
+// TODO delete after debugging
+std::cout << "wrist_pt: " << wrist_pt.transpose() << std::endl;
+std::cout << "q123(0): " << q123(0) << std::endl
+  << "q123(1): " << q123(1) << std::endl
+  << "q123(2): " << q123(2) << std::endl;
+
   return q123;
 }
 
@@ -680,6 +686,19 @@ bool Inverse::fit_joints_to_range(Vectorq7x1 &qvec)
     return false;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
 {
   // before doing anything else, premultiply to get everything in terms of the base.
@@ -787,7 +806,13 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
 
     Eigen::Vector3d q123(q123_from_wrist(w_wrt_base[index_1]));
 
+    // TODO delete after debugging
+    std::cout << "q123 acquired -- " << q123.transpose() << std::endl;
+
     Vectorq7x1 q_sol_p = compute_q456(q123, z_vec4[index_2]);
+
+    // TODO delete after debugging
+    std::cout << "q456 also required -- " << q_sol_p.transpose() << std::endl;
 
 //    ROS_INFO("RNRNRN q123: ");
 //    std::cout << "index: " << index << std::endl;
@@ -825,6 +850,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     case 0:
     {
     }
+    std::cout << "ik_solve() returning -6. " << std::endl;
     return -6;
 
     case 1:
@@ -833,6 +859,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
       err_l_ = err_l[0];
       err_r_ = err_r[0];
     }
+    std::cout << "ik_solve() returning 1. " << std::endl;
     return 1;
 
     default:
@@ -848,6 +875,7 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     return q_sol.size();
   }
   // This is logically unreachable.
+  std::cout << "ik_solve() returning -7. " << std::endl;
   return -7;
 }
 
@@ -889,9 +917,9 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
   theta_vec(0) = q123(0);
   theta_vec(1) = q123(1);
 
-//  ROS_WARN("RN debug 001:");
-//  std::cout << "q123: \n" << q123 << std::endl;
-//  std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1) << std::endl;
+  ROS_WARN("RN debug 001:");
+  std::cout << "q123: \n" << q123 << std::endl;
+  std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1) << std::endl;
 
   d_vec.resize(7);
   d_vec << 0, 0, 0, 0, 0, 0, 0;
@@ -920,9 +948,9 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
   // get frame 4, which depends on 1st 4 vars:
   affine_frame_wrt_base = get_affine_frame(3);
 
-//   ROS_WARN("RN debug 002:");
-//   std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1)
-//             << " theta_vec(2): " << theta_vec(2) <<std::endl;
+   ROS_WARN("RN debug 002:");
+   std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1)
+             << " theta_vec(2): " << theta_vec(2) <<std::endl;
 
   // compute transform frame 6 wrt frame 4:
   // A_{g/base} = A_{4/base}*A_{6/4}*A_{g/6}

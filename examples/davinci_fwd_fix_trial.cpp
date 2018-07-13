@@ -229,7 +229,18 @@ int main(int argc, char **argv)
 	std::cout << "--------------------" << std::endl;
 
 
+	std::cout << "-------PT11--------" << std::endl;
+	q_vec(0) = -0.0;
+	q_vec(1) =  0.0;
+  q_vec(2) =  0.15;
+		affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec);
+  	affine_wrist_wrt_base = dvrk_forward.get_wrist_wrt_base();
+  	std::cout << "q_vec#" << ": " << std::endl;
+		std::cout << q_vec.transpose() << std::endl << std::endl;
 
+	  std::cout << "q_vec#" << ".affine_wrist_wrt_base.translation():" << std::endl;
+  	std::cout << affine_wrist_wrt_base.translation() << std::endl << std::endl;
+	std::cout << "--------------------" << std::endl;
 
 
 

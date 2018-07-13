@@ -35,8 +35,8 @@ namespace davinci_kinematics
 // const double DH_a1 = -0.001; //RN 20180222A3
 // const double DH_a1 = 0.0059; //RN 20180319A1
 // const double DH_a1 = 0.0034; // RN 20180618A1 PSM2
-const double DH_a1 = 0.0050323; // RN 20180618A2 PSM2
-
+// const double DH_a1 = 0.0050323; // RN 20180618A2 PSM2
+const double DH_a1 = 0.005970; // RN 20180712A1 PSM1
 
 
 // axis z1,z2 (prismatic) intersect
@@ -49,10 +49,11 @@ const double DH_a1 = 0.0050323; // RN 20180618A2 PSM2
 // const double DH_a2 = 0.0013; // RN 20180222 GOOD
 // const double DH_a2 = 0.0012; // RN 20180319A1 BAD
 // const double DH_a2 = 0.0010; // RN 20180319A2
-
 // const double DH_a2 = 0.0000; // RN 20180319PSM2A1
 // const double DH_a2 =  0.00069212; // RN 20180618A1 PSM2 
-const double DH_a2 =  0.00015199; // RN 20180618A2 PSM2 
+// const double DH_a2 =  0.00015199; // RN 20180618A2 PSM2 
+const double DH_a2 =  0.001250 ; // RN 20180712A1 PSM1
+
 
 // axes z2 (prismatic) and z3 (shaft rot) intersect
 const double DH_a3 = 0.0;
@@ -84,7 +85,7 @@ const double DH_a7 = 0.0;
 // const double DH_alpha1 =  1.5765; // RN 20180319PSM2A1
 
 const double DH_alpha1 = 1.5672; // RN 20180618A2 PSM2
-
+// const double DH_alpha1 = -1.563553; // RN 20180712A1 PSM1
 
 // const double DH_alpha2 = M_PI/2.0;
 // const double DH_alpha2 = M_PI/2.0 - 0.0194; // RN 20180218A1
@@ -95,8 +96,8 @@ const double DH_alpha1 = 1.5672; // RN 20180618A2 PSM2
 
 // const double DH_alpha2 = 1.5585; // RN 20180319PSM2A1
 // const double DH_alpha2 = 1.5594; // RN 20180618A1 PSM2 
-const double DH_alpha2 =  1.5697; // RN 20180618A2 PSM2 
-
+// const double DH_alpha2 =  1.5697; // RN 20180618A2 PSM2 
+const double DH_alpha2 =  1.562359; // RN 20180712A1 PSM1 
 
 // prismatic axis is aligned with tool-shaft spin axis
 const double DH_alpha3 = 0.0;
@@ -118,9 +119,12 @@ const double cannula_short_length = .035;
 // must command this much displacement to get wrist-bend axis to intersect base origin
 const double insertion_offset = 0.0156;
 
-const double DH_q_offset0 = 0.0;
 
 // THETAs
+
+const double DH_q_offset0 = 0.0;
+// const double DH_q_offset0 = 3.141593; // RN 20180712A1 PSM1
+
 // const double DH_q_offset1 = M_PI/2.0;
 // const double DH_q_offset1 = M_PI/2.0 - 0.0182; // RN 20180218 A1
 // const double DH_q_offset1 = 1.5663; // RN 20180219A1
@@ -131,7 +135,7 @@ const double DH_q_offset0 = 0.0;
 // const double DH_q_offset1 = 1.5919; // RN 20180319PSM2A1 
 // const double DH_q_offset1 =  1.5854; // RN 20180618A1 PSM2
 const double DH_q_offset1 =  1.5869; // RN 20180618A2 PSM2
-
+// const double DH_q_offset1 =  -1.574867; // RN 20180712A1 PSM1
 
 // erdem IK tested, sign is negative. q3 should be larger than abs(insertion_offset)
 const double DH_q_offset2 = -insertion_offset;

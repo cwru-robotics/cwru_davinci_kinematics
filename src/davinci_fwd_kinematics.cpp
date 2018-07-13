@@ -214,11 +214,19 @@ Forward::Forward()
 
 // dval_DH_offsets_<< 0, -0.001 , DH_q_offsets[2], 0, 0, 0, 0; //RN 20180319PSM2A1
 // dval_DH_offsets_<< 0, -0.00074152, DH_q_offsets[2], 0, 0, 0, 0; // RN 20180618A1 PSM2
-dval_DH_offsets_<< 0,  -0.0012186, DH_q_offsets[2], 0, 0, 0, 0; // RN 20180618A1 PSM2
+// dval_DH_offsets_<< 0,  -0.0012186, DH_q_offsets[2], 0, 0, 0, 0; // RN 20180618A1 PSM2
+
+dval_DH_offsets_<< 0, 0.003006, -0.009347, 0, 0, 0, 0; // RN 20180712A1 PSM1
+
 
   // resize MatrixXd Jacobian_ and initialize terms to 0's
   Jacobian_ = Eigen::MatrixXd::Zero(6, 6);
 }
+
+
+
+
+
 
 // provide DH theta and d values, return affine pose of gripper tip w/rt base frame
 // also computes all intermediate affine frames, w/rt base frame
@@ -250,6 +258,13 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::Ve
   // RN added for wrist pt coordinate w/rt base frame
   affine_wrist_wrt_base_ = affine_products_[2];
 }
+
+
+
+
+
+
+
 
 Eigen::Affine3d Forward::get_wrist_wrt_base() // RN
 {

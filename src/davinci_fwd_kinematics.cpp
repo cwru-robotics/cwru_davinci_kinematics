@@ -118,11 +118,27 @@ Vectorq7x1 Forward::convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec
   const Eigen::VectorXd &dvals_DH_vec)
 {
   Vectorq7x1 q_vec;
+
+  // TODO delete after debugging
+  std::cout << std::endl;
+  std::cout << " >>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
+  std::cout << "BEFORE convert_DH_vecs_to_qvec: " << std::endl;
+  std::cout << "thetas_DH_vec: " << thetas_DH_vec.transpose() << std::endl;
+  std::cout << "dvals_DH_vec: " << dvals_DH_vec.transpose() << std::endl;
+
   for (int i = 0; i < 7; i++)
   {
     q_vec(i) = thetas_DH_vec(i)-theta_DH_offsets_(i);
   }
   q_vec(2) = dvals_DH_vec(2)-dval_DH_offsets_(2);
+
+  // TODO delete after debugging
+  std::cout << "AFTER convert_DH_vecs_to_qvec: " << std::endl;
+  std::cout << "q_vec: " << q_vec.transpose() << std::endl;
+  std::cout << " <<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+  std::cout << std::endl;
+
+
   return q_vec;
 }
 
@@ -216,7 +232,8 @@ Forward::Forward()
 // dval_DH_offsets_<< 0, -0.00074152, DH_q_offsets[2], 0, 0, 0, 0; // RN 20180618A1 PSM2
 // dval_DH_offsets_<< 0,  -0.0012186, DH_q_offsets[2], 0, 0, 0, 0; // RN 20180618A1 PSM2
 
-dval_DH_offsets_<< 0, 0.003006, -0.009347, 0, 0, 0, 0; // RN 20180712A1 PSM1
+//dval_DH_offsets_<< 0, 0.003006, -0.009347, 0, 0, 0, 0; // RN 20180712A1 PSM1
+  dval_DH_offsets_<< 0, 0, DH_q_offsets[2], 0, 0, 0, 0; // RN 20180713 EXPERIMENTAL
 
 
   // resize MatrixXd Jacobian_ and initialize terms to 0's

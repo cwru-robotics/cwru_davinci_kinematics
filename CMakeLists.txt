@@ -94,6 +94,14 @@ target_link_libraries(davinci_fwd_fix_trial
   ${catkin_LIBRARIES}
 )
 
+add_executable(test_dh_params examples/test_dh_params.cpp)
+
+target_link_libraries(test_dh_params
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+
 
 file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)
 file(GLOB_RECURSE TEST_FILES_CPP test/*.cpp)

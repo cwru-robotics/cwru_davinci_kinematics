@@ -624,6 +624,10 @@ void Inverse::compute_w_from_tip(Eigen::Affine3d affine_gripper_tip,
   zvec_4a = -(zvec_5.cross(xvec_5));
 }
 
+
+
+
+
 bool Inverse::fit_q_to_range(double q_min, double q_max, double &q)
 {
   q = fmod(q, 2.0 * M_PI);
@@ -802,6 +806,9 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     int index_2(index >> 1);
     int index_1(index % 2);
 
+    // TODO delete after debugging
+    std::cout << "w_wrt_base[" << index_1 << "]: " << w_wrt_base[index_1].transpose() << std::endl;
+    std::cout << "z_vec4[" << index_2 << "]: " << z_vec4[index_2].transpose() << std::endl;
 
 
     Eigen::Vector3d q123(q123_from_wrist(w_wrt_base[index_1]));
@@ -917,9 +924,9 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
   theta_vec(0) = q123(0);
   theta_vec(1) = q123(1);
 
-  ROS_WARN("RN debug 001:");
-  std::cout << "q123: \n" << q123 << std::endl;
-  std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1) << std::endl;
+//  ROS_WARN("RN debug 001:");
+//  std::cout << "q123: \n" << q123 << std::endl;
+//  std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1) << std::endl;
 
   d_vec.resize(7);
   d_vec << 0, 0, 0, 0, 0, 0, 0;
@@ -950,7 +957,7 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
 
    ROS_WARN("RN debug 002:");
    std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1)
-             << " theta_vec(2): " << theta_vec(2) <<std::endl;
+             << " theta_vec(2): " << theta_vec(2) << " theta_vec(3): " << theta_vec(3) << std::endl;
 
   // compute transform frame 6 wrt frame 4:
   // A_{g/base} = A_{4/base}*A_{6/4}*A_{g/6}

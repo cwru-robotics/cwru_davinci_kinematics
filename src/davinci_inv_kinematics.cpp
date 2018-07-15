@@ -541,11 +541,13 @@ Eigen::Vector3d Inverse::q123_from_wrist(Eigen::Vector3d wrist_pt)
   q123(2) = d3;
 
 // TODO delete after debugging
-std::cout << "wrist_pt: " << wrist_pt.transpose() << std::endl;
-std::cout << "q123(0): " << q123(0) << std::endl
+  std::cout << "checkpoint@ 1/ " << std::endl;
+  std::cout <<"q123_from_wrist() >>>>>>>>>>>>>>>>>" << std::endl;
+  std::cout << "wrist_pt: " << wrist_pt.transpose() << std::endl;
+  std::cout << "q123(0): " << q123(0) << std::endl
   << "q123(1): " << q123(1) << std::endl
   << "q123(2): " << q123(2) << std::endl;
-
+  std::cout <<"q123_from_wrist() <<<<<<<<<<<<<<<<<" << std::endl;
   return q123;
 }
 
@@ -819,14 +821,12 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     Vectorq7x1 q_sol_p = compute_q456(q123, z_vec4[index_2]);
 
     // TODO delete after debugging
+    std::cout << "checkpoint@ 2/" << std::endl;
+    std::cout << "compute_q456() >>>>>>>>>>>>>>>>>>>>>" << std::endl;
     std::cout << "q456 also required -- " << q_sol_p.transpose() << std::endl;
+    std::cout << "compute_q456() <<<<<<<<<<<<<<<<<<<<<" << std::endl;
 
-//    ROS_INFO("RNRNRN q123: ");
-//    std::cout << "index: " << index << std::endl;
-//    std::cout << "index_1: " << index_1 << std::endl;
-//    std::cout << "w_wrt_base[index_1]: \n" << w_wrt_base[index_1] << std::endl;
-//    std::cout << "q123: \n" << q123 << std::endl;
-//    std::cout << "q_sol_p: \n" << q_sol_p << std::endl;
+
 
     if (fit_joints_to_range(q_sol_p))
     {

@@ -27,13 +27,13 @@ int main(int argc, char **argv)
 
   ROS_WARN("Forward test:");
 
-  q_vec(0) = 0;
-  q_vec(1) = 0;
-  q_vec(2) = 0.15;
-  q_vec(3) = 0;
-  q_vec(4) = 0;
-  q_vec(5) = 0;
-  q_vec(6) = 0;
+  q_vec(0) = 0.25;
+  q_vec(1) = -0.25;
+  q_vec(2) = 0.1;
+  q_vec(3) = 0.1;
+  q_vec(4) = 0.2;
+  q_vec(5) = -0.1;
+  q_vec(6) = 0.1;
 
   std::cout << "q_vec#=================================================" << ": " << std::endl;
   std::cout << q_vec.transpose() << std::endl << std::endl;

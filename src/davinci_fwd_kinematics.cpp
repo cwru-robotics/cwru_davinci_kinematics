@@ -240,6 +240,7 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::Ve
   }
   affine_products_.resize(7);
   affine_products_[0] =  affine_frame0_wrt_base_ * affines_i_wrt_iminus1[0];
+  // RN Note that it starts from 1.
   for (int i = 1; i < 7; i++)
   {
     affine_products_[i] = affine_products_[i-1] * affines_i_wrt_iminus1[i];

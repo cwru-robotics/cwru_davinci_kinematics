@@ -74,5 +74,7 @@ int main(int argc, char **argv)
     }
   }
   printf("err_cnt = %d", err_cnt);
+
+  std::cout << "hello";
   return 0;
 }

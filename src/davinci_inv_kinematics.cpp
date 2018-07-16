@@ -53,8 +53,6 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
   q7 << q_ik(6);
 
-	std::cout << "DEBUG -- q7: " << q7 << std::endl;
-
   A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_ik);
 
   R1 = desired_hand_pose.linear();
@@ -540,14 +538,6 @@ Eigen::Vector3d Inverse::q123_from_wrist(Eigen::Vector3d wrist_pt)
   q123(1) = theta2;
   q123(2) = d3;
 
-// TODO delete after debugging
-  std::cout << "checkpoint@ 1/ " << std::endl;
-  std::cout <<"q123_from_wrist() >>>>>>>>>>>>>>>>>" << std::endl;
-  std::cout << "wrist_pt: " << wrist_pt.transpose() << std::endl;
-  std::cout << "q123(0): " << q123(0) << std::endl
-  << "q123(1): " << q123(1) << std::endl
-  << "q123(2): " << q123(2) << std::endl;
-  std::cout <<"q123_from_wrist() <<<<<<<<<<<<<<<<<" << std::endl;
   return q123;
 }
 
@@ -611,11 +601,6 @@ void Inverse::compute_w_from_tip(Eigen::Affine3d affine_gripper_tip,
 
   sol_O4a = origin_5 - dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*xvec_5;
   sol_O4b = origin_5 + dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis*xvec_5;
-
-  // RN debug
-//  ROS_WARN("RN DEBUG");
-//  std::cout << "sol_O4a: \n" << sol_O4a << std::endl;
-//  std::cout << "sol_O4b: \n" << sol_O4b << std::endl;
 
   // possible error here: need to get sign of xvec_5 correct.
   // given O_4 and O_5, should have xvec_5 point from O_4 towards O_5
@@ -710,10 +695,6 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
   // before doing anything else, premultiply to get everything in terms of the base.
   Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
 
-//  ROS_WARN("DEBUG");
-//  std::cout << "affine_frame0_wrt_base: \n" << affine_frame0_wrt_base.translation() << std::endl;
-//  std::cout << affine_frame0_wrt_base.linear() << std::endl;
-
   desired_hand_pose_ = affine_frame0_wrt_base.inverse() * desired_hand_pose;
   // desired_hand_pose_ = desired_hand_pose;
 
@@ -790,10 +771,6 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
   Eigen::Vector3d w_wrt_base[2];
   Eigen::Vector3d z_vec4[2];
 
-//  ROS_WARN("DEBUG DEBUG");
-//  std::cout << "desired_hand_pose: \n" << desired_hand_pose.translation() << std::endl;
-//  std::cout << "desired_hand_pose_: \n" << desired_hand_pose_.translation() << std::endl;
-
   compute_w_from_tip(desired_hand_pose_, z_vec4[0], z_vec4[1], w_wrt_base[0], w_wrt_base[1]);
 
   // next step: get theta1, theta2, d3 soln from wrist position:
@@ -808,33 +785,13 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     int index_2(index >> 1);
     int index_1(index % 2);
 
-    // TODO delete after debugging
-    std::cout << "w_wrt_base[" << index_1 << "]: " << w_wrt_base[index_1].transpose() << std::endl;
-    std::cout << "z_vec4[" << index_2 << "]: " << z_vec4[index_2].transpose() << std::endl;
-
-
     Eigen::Vector3d q123(q123_from_wrist(w_wrt_base[index_1]));
 
-    // TODO delete after debugging
-    std::cout << "q123 acquired -- " << q123.transpose() << std::endl;
-
-    Vectorq7x1 q_sol_p = compute_q456(q123, z_vec4[index_2]);
-
-    // TODO delete after debugging
-    std::cout << "checkpoint@ 2/" << std::endl;
-    std::cout << "compute_q456() >>>>>>>>>>>>>>>>>>>>>" << std::endl;
-    std::cout << "q456 also required -- " << q_sol_p.transpose() << std::endl;
-    std::cout << "compute_q456() <<<<<<<<<<<<<<<<<<<<<" << std::endl;
-
-
+     Vectorq7x1 q_sol_p = compute_q456(q123, z_vec4[index_2]);
 
     if (fit_joints_to_range(q_sol_p))
     {
       q_sol.push_back(q_sol_p);
-
-      // TODO delete after debugging
-      // ROS_WARN("fit_joints_to_range No: %d", index);
-      // std::cout << "q_sol_p: " << q_sol_p.transpose() << std::endl;
 
       // compute the numerical errors.
       Eigen::Affine3d affine_test_fk = fwd_kin_solve(q_sol_p);
@@ -846,9 +803,6 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     else
     {
       q_fail.push_back(q_sol_p);
-      // TODO delete after debugging
-      // ROS_WARN("q_fail.push_back(q_sol_p) No: %d", index);
-      // std::cout << "q_sol_p: " << q_sol_p.transpose() << std::endl;
     }
   }
 
@@ -924,10 +878,6 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
   theta_vec(0) = q123(0);
   theta_vec(1) = q123(1);
 
-//  ROS_WARN("RN debug 001:");
-//  std::cout << "q123: \n" << q123 << std::endl;
-//  std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1) << std::endl;
-
   d_vec.resize(7);
   d_vec << 0, 0, 0, 0, 0, 0, 0;
   d_vec(2) = q123(2);
@@ -954,10 +904,6 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
   fwd_kin_solve_DH(theta_vec, d_vec);
   // get frame 4, which depends on 1st 4 vars:
   affine_frame_wrt_base = get_affine_frame(3);
-
-   ROS_WARN("RN debug 002:");
-   std::cout << "theta_vec(0): " << theta_vec(0) << " theta_vec(1): " << theta_vec(1)
-             << " theta_vec(2): " << theta_vec(2) << " theta_vec(3): " << theta_vec(3) << std::endl;
 
   // compute transform frame 6 wrt frame 4:
   // A_{g/base} = A_{4/base}*A_{6/4}*A_{g/6}

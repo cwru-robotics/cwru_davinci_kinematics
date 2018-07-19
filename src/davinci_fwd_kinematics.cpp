@@ -196,12 +196,9 @@ Forward::Forward()
   {
     theta_DH_offsets_(i) = DH_q_offsets[i];
 
-    // std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(i): " << theta_DH_offsets_(i)  <<std::endl;
   }
   // don't put prismatic displacement here
-  // theta_DH_offsets_(2) = 0.0;
   theta_DH_offsets_(2) = 0.0;
-  // std::cout << "RNDEBUG" << std::endl << "theta_DH_offsets_(2): " << theta_DH_offsets_(2)  <<std::endl;
 
   dval_DH_offsets_.resize(7);
 	// dval_DH_offsets_<< 0, 0 , DH_q_offsets[2], 0, 0, 0, 0;
@@ -361,5 +358,290 @@ void Forward::gen_rand_legal_jnt_vals(Vectorq7x1 &qvec)
     qvec(i) = q_lower_limits[i] + (q_upper_limits[i] - q_lower_limits[i]) * drand_val;
   }
 }
+
+
+// TODO
+bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_name) {
+
+  std::string psm_yaml_path;
+  YAML::Node psm_dh_param_node;
+
+  double j3_scale_factor;
+  Eigen::VectorXd theta_DH_offsets;
+  Eigen::VectorXd dval_DH_offsets;
+  Eigen::VectorXd DH_a_params;
+  Eigen::VectorXd DH_alpha_params;
+
+  theta_DH_offsets.resize(7);
+  dval_DH_offsets.resize(7);
+  DH_a_params.resize(7);
+  DH_alpha_params.resize(7);
+
+  theta_DH_offsets = theta_DH_offsets_generic_;
+  dval_DH_offsets = dval_DH_offsets_generic_;
+  DH_a_params = DH_a_params_generic_;
+  DH_alpha_params = DH_alpha_params_generic_;
+  j3_scale_factor = j3_scale_factor_generic_;
+
+  ros_pkg_path_ = ros::package::getPath("cwru_davinci_kinematics");
+  psm_yaml_path =  ros_pkg_path_ + "/config/" + yaml_name + ".yaml";
+
+  try {
+    ROS_INFO("Loading PSM DH parameter yaml file...");
+    psm_dh_param_node = YAML::LoadFile(psm_yaml_path);
+  } catch (YAML::ParserException &e) {
+    ROS_WARN("Failed to yaml.");
+    std::cout << e.what() << std::endl;
+    return false;
+  }
+
+  try {
+    theta_DH_offsets[0] = psm_dh_param_node["theta_1"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH theta_1, will use generic instead.");
+  }
+
+  try {
+    theta_DH_offsets[1] = psm_dh_param_node["theta_2"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH theta_2, will use generic instead.");
+  }
+
+  try {
+    DH_alpha_params[0] = psm_dh_param_node["alpha_1"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH alpha_1, will use generic instead.");
+  }
+
+  try {
+    DH_alpha_params[1] = psm_dh_param_node["alpha_2"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH alpha_2, will use generic instead.");
+  }
+
+  try {
+    DH_a_params[0] = psm_dh_param_node["a_1"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH a_1, will use generic instead.");
+  }
+
+  try {
+    DH_a_params[1] = psm_dh_param_node["a_2"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH a_2, will use generic instead.");
+  }
+
+  try {
+    dval_DH_offsets[0] = psm_dh_param_node["d_1"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH d_1, will use generic instead.");
+  }
+
+  try {
+    dval_DH_offsets[1] = psm_dh_param_node["d_2"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH d_2, will use generic instead.");
+  }
+
+  try {
+    dval_DH_offsets[2] = psm_dh_param_node["d_3"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH d_3, will use generic instead.");
+  }
+
+  try {
+    j3_scale_factor = psm_dh_param_node["j3_scale_factor"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load j3_scale_factor, will use generic instead.");
+  }
+
+  ROS_INFO("Yaml loading complete!");
+
+  // Add to maps
+  theta_DH_offsets_map_[kinematic_set_name] = theta_DH_offsets;
+  dval_DH_offsets_map_[kinematic_set_name] = dval_DH_offsets;
+  DH_a_params_map_[kinematic_set_name] = DH_a_params;
+  DH_alpha_params_map_[kinematic_set_name] = DH_alpha_params;
+  j3_scale_factor_map_[kinematic_set_name] = j3_scale_factor;
+
+  // Also initialise related variables if needed.
+
+
+  return true;
+
+}
+
+
+void Forward::resetDhOffsetsMaps() {
+
+  theta_DH_offsets_map_.clear();
+  dval_DH_offsets_map_.clear();
+  DH_a_params_map_.clear();
+  DH_alpha_params_map_.clear();
+  affine_gripper_wrt_base_map_.clear();
+  affine_wrist_wrt_base_map_.clear();
+  affine_products_map_.clear();
+  current_joint_state__map_.clear();
+
+}
+
+
+void Forward::resetDhGenericParams() {
+
+  theta_DH_offsets_generic_.resize(7);
+  dval_DH_offsets_generic_.resize(7);
+  DH_a_params_generic_.resize(7);
+  DH_alpha_params_generic_.resize(7);
+
+  for (int i = 0; i < 7; i++) {
+    theta_DH_offsets_generic_(i) = DH_q_offsets[i];
+    DH_alpha_params_generic_(i) = DH_alpha_params[i];
+    DH_a_params_generic_(i) = DH_a_params[i];
+    if (i == 2) {
+      theta_DH_offsets_generic_(i) = 0;
+    }
+  }
+
+  dval_DH_offsets_generic_<< 0, 0, DH_q_offsets[2], 0, 0, 0, 0;
+
+  j3_scale_factor_generic_ = 1.0;
+
+}
+
+
+void Forward::printAllDhMaps() {
+
+  Eigen::VectorXd temp;
+
+  std::cout << "theta_DH_offsets_map_ size: " << theta_DH_offsets_map_.size() << std::endl;
+  for (std::map<std::string,
+                Eigen::VectorXd>::iterator it=theta_DH_offsets_map_.begin();
+                    it!=theta_DH_offsets_map_.end(); ++it) {
+
+    std::cout << it->first << ":" << std::endl;
+    temp = it->second;
+    std::cout << temp.transpose() << std::endl;
+  }
+
+  std::cout << "dval_DH_offsets_map_ size: " << dval_DH_offsets_map_.size() << std::endl;
+  for (std::map<std::string,
+                Eigen::VectorXd>::iterator it=dval_DH_offsets_map_.begin();
+       it!=dval_DH_offsets_map_.end(); ++it) {
+
+    std::cout << it->first << ":" << std::endl;
+    temp = it->second;
+    std::cout << temp.transpose() << std::endl;
+  }
+
+  std::cout << "DH_a_params_map_ size: " << DH_a_params_map_.size() << std::endl;
+  for (std::map<std::string,
+                Eigen::VectorXd>::iterator it=DH_a_params_map_.begin();
+       it!=DH_a_params_map_.end(); ++it) {
+
+    std::cout << it->first << ":" << std::endl;
+    temp = it->second;
+    std::cout << temp.transpose() << std::endl;
+  }
+
+  std::cout << "DH_alpha_params_map_ size: " << DH_alpha_params_map_.size() << std::endl;
+  for (std::map<std::string,
+                Eigen::VectorXd>::iterator it=DH_alpha_params_map_.begin();
+       it!=DH_alpha_params_map_.end(); ++it) {
+
+    std::cout << it->first << ":" << std::endl;
+    temp = it->second;
+    std::cout << temp.transpose() << std::endl;
+  }
+
+
+
+}
+
+
+Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec, std::string kinematic_set_name) {
+
+  current_joint_state__map_[kinematic_set_name] = q_vec;
+  Eigen::VectorXd thetas_DH_vec, dvals_DH_vec;
+  convert_qvec_to_DH_vecs(q_vec, thetas_DH_vec, dvals_DH_vec, kinematic_set_name);
+  fwd_kin_solve_DH(thetas_DH_vec, dvals_DH_vec, kinematic_set_name);
+
+  return affine_gripper_wrt_base_map_[kinematic_set_name];
+
+}
+
+
+void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
+                             Eigen::VectorXd &thetas_DH_vec,
+                             Eigen::VectorXd &dvals_DH_vec,
+                             std::string kinematic_set_name) {
+
+  thetas_DH_vec.resize(7);
+  thetas_DH_vec = theta_DH_offsets_map_[kinematic_set_name];
+  for (int i = 0; i < 7; i++)
+  {
+    // skip the linear joint.
+    if (i == 2) continue;
+    thetas_DH_vec(i)+= q_vec(i);
+  }
+  dvals_DH_vec.resize(7);
+  dvals_DH_vec = dval_DH_offsets_map_[kinematic_set_name];
+  dvals_DH_vec(2) += j3_scale_factor_map_[kinematic_set_name]*q_vec(2);
+
+}
+
+
+void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec,
+                      const Eigen::VectorXd& d_vec,
+                      std::string kinematic_set_name) {
+
+  std::vector <Eigen::Affine3d> affines_i_wrt_iminus1;
+  affines_i_wrt_iminus1.resize(7);
+  Eigen::Affine3d xform;
+  double a, d, theta, alpha;
+
+  Eigen::VectorXd DH_a_params, DH_alpha_params;
+  std::vector<Eigen::Affine3d> affine_products;
+  DH_a_params = DH_a_params_map_[kinematic_set_name];
+  DH_alpha_params = DH_alpha_params_map_[kinematic_set_name];
+
+  for (int i = 0; i < 7; i++)
+  {
+    a = DH_a_params[i];
+    d = d_vec(i);
+    alpha = DH_alpha_params[i];
+    theta = theta_vec(i);
+    xform = computeAffineOfDH(a, d, alpha, theta);
+    affines_i_wrt_iminus1[i]= xform;
+  }
+
+  affine_products.resize(7);
+  affine_products[0] =  affine_frame0_wrt_base_ * affines_i_wrt_iminus1[0];
+  for (int i = 1; i < 7; i++)
+  {
+    affine_products[i] = affine_products[i-1] * affines_i_wrt_iminus1[i];
+  }
+
+  affine_gripper_wrt_base_map_[kinematic_set_name] = affine_products[6] * affine_gripper_wrt_frame6_;
+
+  // RN added for wrist pt coordinate w/rt base frame
+  affine_wrist_wrt_base_map_[kinematic_set_name] = affine_products[2];
+
+  // Also include the newly calculated affine products into its map.
+  affine_products_map_[kinematic_set_name] = affine_products;
+
+}
+
+
+
 
 }  // namespace davinci_kinematics

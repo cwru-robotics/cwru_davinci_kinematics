@@ -21,7 +21,9 @@ endif()
 
 add_definitions(${EIGEN_DEFINITIONS})
 
-find_package(catkin REQUIRED COMPONENTS roscpp roslint tf tf2 tf2_eigen)
+find_package(yaml-cpp REQUIRED)
+
+find_package(catkin REQUIRED COMPONENTS roscpp roslib roslint tf tf2 tf2_eigen)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
@@ -30,12 +32,13 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${catkin_INCLUDES}
   ${Eigen3_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIRS}
 )
 
 catkin_package(
 	DEPENDS ${Eigen3_DEP}
 	LIBRARIES davinci_kinematics
-	CATKIN_DEPENDS roscpp
+	CATKIN_DEPENDS roscpp roslib
 	INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
 )
 
@@ -46,6 +49,7 @@ add_library(davinci_kinematics src/davinci_fwd_kinematics.cpp src/davinci_inv_ki
 
 target_link_libraries(davinci_kinematics
   ${catkin_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
   davinci_kinematic_definitions
   )
 

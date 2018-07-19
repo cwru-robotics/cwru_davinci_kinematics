@@ -44,6 +44,7 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>geometry2</build_depend>
+  <build_depend>roslib</build_depend>
   
 
   <!-- This should be a test_depend -->
@@ -56,6 +57,7 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>geometry2</run_depend>
+  <run_depend>roslib</run_depend>
   
 
   <!-- The export tag contains other, unspecified, tags -->

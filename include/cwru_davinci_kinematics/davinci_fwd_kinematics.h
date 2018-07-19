@@ -24,8 +24,12 @@
 #define CWRU_DAVINCI_KINEMATICS_DAVINCI_FWD_KINEMATICS_H
 
 #include <vector>
+#include <map>
 #include <Eigen/Eigen>
 #include <string>
+
+#include <ros/package.h>
+#include <yaml-cpp/yaml.h>
 
 #include <tf/transform_listener.h>
 #include <sensor_msgs/JointState.h>
@@ -235,6 +239,54 @@ private:
    */
   double dh_var_to_qvec(double dh_val, int index);
 
+
+  // RN
+  // Added on 19/07/18 as Mk2 Upgrades.
+  // TODO refactor after functional tests
+
+
+  bool loadDHyamlfiles(std::string yaml_name, std::string kenimatic_set_name);
+
+  void resetDhOffsetsMaps();
+
+  void resetDhGenericParams();
+
+  void printAllDhMaps();
+
+  /**
+   * @brief Given a vector of joint states in Davinci coords, convert these into
+   * equivalent DH parameters according to the given psm_index.
+   *
+   * @param q_vec
+   * @param psm_index
+   * @param thetas_DH_vec
+   * @param dvals_DH_vec
+   */
+  void convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
+                               const int psm_index,
+                               Eigen::VectorXd &thetas_DH_vec,
+                               Eigen::VectorXd &dvals_DH_vec);
+
+  Eigen::Affine3d fwd_kin_solve(const Vectorq7x1& q_vec, std::string kinematic_set_name);
+
+  Vectorq7x1 convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec,
+                                     const Eigen::VectorXd &dvals_DH_vec,
+                                     std::string kinematic_set_name);
+
+  void convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
+                               Eigen::VectorXd &thetas_DH_vec,
+                               Eigen::VectorXd &dvals_DH_vec,
+                               std::string kinematic_set_name);
+
+  void fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec,
+                        const Eigen::VectorXd& d_vec,
+                        std::string kinematic_set_name);
+
+
+
+  std::string ros_pkg_path_;
+
+
   /**
    * @brief This is the internal joint state of the forward kinematics.
    */
@@ -279,6 +331,25 @@ private:
    * Stored intrinsicaly as part of the dvrk kinematics
    */
   Eigen::VectorXd dval_DH_offsets_;
+
+  // RN
+  Eigen::VectorXd theta_DH_offsets_generic_;
+  Eigen::VectorXd dval_DH_offsets_generic_;
+  Eigen::VectorXd DH_a_params_generic_;
+  Eigen::VectorXd DH_alpha_params_generic_;
+  double j3_scale_factor_generic_;
+  std::map<std::string, Eigen::VectorXd> theta_DH_offsets_map_;
+  std::map<std::string, Eigen::VectorXd> dval_DH_offsets_map_;
+  std::map<std::string, Eigen::VectorXd> DH_a_params_map_;
+  std::map<std::string, Eigen::VectorXd> DH_alpha_params_map_;
+  std::map<std::string, double> j3_scale_factor_map_;
+
+  std::map<std::string, Vectorq7x1> current_joint_state__map_;
+
+  std::map<std::string, Eigen::Affine3d> affine_gripper_wrt_base_map_;
+  std::map<std::string, Eigen::Affine3d> affine_wrist_wrt_base_map_;
+  std::map<std::string, std::vector<Eigen::Affine3d>> affine_products_map_;
+
 
   /**
    * @brief The 6x6 Jacobian of the current joint positions, only computed when the compute_jacobian method is called.

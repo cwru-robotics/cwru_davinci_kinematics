@@ -1,0 +1,16 @@
+# This file contains a generic definition of a PSM DH parameters.
+# It should be placed under /cwru_davinci_kinematics/config/ folder.
+
+# DH_0 TO DH_1 FRAME
+theta_1: 0.0
+alpha_1: 1.570796 # pi/2
+a_1: 0.0
+d_1: 0.0
+# DH_1 TO DH_2 FRAME
+theta_2: 1.570796
+alpha_2: 1.570796
+a_2: 0
+d_2: 0
+# DH_2 TO DH_3 FRAME
+d_3: 0
+j3_scale_factor: 1.0

@@ -69,7 +69,12 @@ int main(int argc, char **argv)
 
   }
 
-
+//  dvrk_forward.resetDhGenericParams();
+//  dvrk_forward.resetDhOffsetsMaps();
+//  dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
+//  dvrk_forward.loadDHyamlfiles("psm1_dh","psm2_dh");
+//
+//  dvrk_forward.printAllDhMaps();
 
 
   return 1;

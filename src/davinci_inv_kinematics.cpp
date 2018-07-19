@@ -863,6 +863,9 @@ Eigen::Vector3d Inverse::compute_fk_wrist(Eigen::Vector3d q123)
   return wrist_pt;
 }
 
+
+
+// TODO why is this not using convert_qvec_to_DH_vecs() before fwd_kin_solve_DH()?
 Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
  {
   Eigen::Affine3d affine_frame_wrt_base, affine_frame6_wrt_4, affine_frame6_wrt_5, fk_gripper_frame;

@@ -492,6 +492,7 @@ void Forward::resetDhOffsetsMaps() {
   affine_wrist_wrt_base_map_.clear();
   affine_products_map_.clear();
   current_joint_state__map_.clear();
+  Jacobian_map_.clear();
 
 }
 
@@ -640,6 +641,65 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec,
   affine_products_map_[kinematic_set_name] = affine_products;
 
 }
+
+
+
+
+Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
+                                          std::string kinematic_set_name) {
+  // use the jacobian to make the computation.
+  fwd_kin_solve(q_vec, kinematic_set_name);
+
+  Eigen::Vector3d z_axis;
+  Eigen::Vector3d vec_tip_minus_Oi_wrt_base;
+  Eigen::Matrix3d R;
+  Eigen::Vector3d r_tip_wrt_base = affine_gripper_wrt_base_map_[kinematic_set_name].translation();
+  Eigen::Vector3d z_axis0 = affine_frame0_wrt_base_.linear().col(2);
+  std::vector <Eigen::Affine3d> affine_products;
+
+
+  // angular Jacobian is just the z axes of each revolute joint (expressed in base frame);
+  // for prismatic joint, there is no angular contribution
+  // start from z_axis0
+
+  // Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
+  Jacobian_map_[kinematic_set_name].block<3, 1>(3, 0) = z_axis0;
+  vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_frame0_wrt_base_.translation();
+  Jacobian_map_[kinematic_set_name].block<3, 1>(0, 0) = z_axis0.cross(vec_tip_minus_Oi_wrt_base);
+  // 2nd joint:
+  // refer to previous joint's z axis
+  affine_products = affine_products_map_[kinematic_set_name];
+  R = affine_products[0].linear();
+  z_axis = R.col(2);
+  // Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
+  Jacobian_map_[kinematic_set_name].block<3, 1>(3, 1) = z_axis;
+  vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products[0].translation();
+  Jacobian_map_[kinematic_set_name].block<3, 1>(0, 1) = z_axis.cross(vec_tip_minus_Oi_wrt_base);
+  // prismatic joint:
+  R = affine_products[1].linear();
+  z_axis = R.col(2);
+  Jacobian_map_[kinematic_set_name].block<3, 1>(0, 2) = z_axis;
+  // joints 4-6:
+  for (int i = 3; i < 6; i++)
+  {
+    R = affine_products[i-1].linear();
+    z_axis = R.col(2);
+    // Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
+    Jacobian_map_[kinematic_set_name].block<3, 1>(3, i) = z_axis;
+    vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products[i-1].translation();
+    Jacobian_map_[kinematic_set_name].block<3, 1>(0, i) = z_axis.cross(vec_tip_minus_Oi_wrt_base);
+  }
+  // translational Jacobian depends on joint's z-axis and vector from i'th axis to robot tip
+  return Jacobian_map_[kinematic_set_name];
+
+
+}
+
+
+
+
+
+
 
 
 

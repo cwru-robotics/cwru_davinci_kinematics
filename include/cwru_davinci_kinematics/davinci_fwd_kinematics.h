@@ -282,6 +282,8 @@ public:
                         const Eigen::VectorXd& d_vec,
                         std::string kinematic_set_name);
 
+  Eigen::MatrixXd compute_jacobian(const Vectorq7x1& q_vec, std::string kinematic_set_name);
+
 
 
   std::string ros_pkg_path_;
@@ -345,6 +347,7 @@ public:
   std::map<std::string, double> j3_scale_factor_map_;
 
   std::map<std::string, Vectorq7x1> current_joint_state__map_;
+  std::map<std::string, Eigen::MatrixXd> Jacobian_map_;
 
   std::map<std::string, Eigen::Affine3d> affine_gripper_wrt_base_map_;
   std::map<std::string, Eigen::Affine3d> affine_wrist_wrt_base_map_;

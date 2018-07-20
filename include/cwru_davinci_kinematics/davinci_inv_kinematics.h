@@ -71,6 +71,21 @@ public:
   int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose);
   bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate, Eigen::VectorXd &q_ik);
 
+  int ik_solve(Eigen::Affine3d const& desired_hand_pose, std::string kinematic_set_name); // is this necessary?
+  int ik_solve_generic(Eigen::Affine3d const& desired_hand_pose);
+  bool solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
+                         Eigen::VectorXd &q_ik,
+                         std::string kinematic_set_name);
+  int ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate,
+                              std::string kinematic_set_name);
+  bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate,
+                                Eigen::VectorXd &q_ik,
+                                std::string kinematic_set_name);
+  int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose,
+                              std::string kinematic_set_name);
+
+  void resetAllIkMaps();
+
 
   /**
    * @brief get the properly computed (and validated) solution.
@@ -223,6 +238,11 @@ private:
    * @brief The minimum distance from joint 4 to the gripper tip.
    */
   // double min_dist_O4_to_gripper_tip_;
+
+
+  std::map<std::string, Vectorq7x1> q_vec_soln_refined_map_;
+  std::map<std::string, Vectorq7x1> q_vec_soln_map_;
+  std::map<std::string, Eigen::Affine3d> desired_hand_pose_map_; // is thie necessary?
 
   double err_l_;
   double err_r_;

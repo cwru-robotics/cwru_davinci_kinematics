@@ -69,13 +69,30 @@ int main(int argc, char **argv)
 
   }
 
-//  dvrk_forward.resetDhGenericParams();
-//  dvrk_forward.resetDhOffsetsMaps();
-//  dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
-//  dvrk_forward.loadDHyamlfiles("psm1_dh","psm2_dh");
-//
-//  dvrk_forward.printAllDhMaps();
+  dvrk_forward.resetDhGenericParams();
+  dvrk_forward.resetDhOffsetsMaps();
+  dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
+  dvrk_forward.loadDHyamlfiles("psm_generic","psm_generic");
 
+  dvrk_forward.printAllDhMaps();
+
+  q_vec(0) = -0.0;
+  q_vec(1) = -0.0;
+  q_vec(2) = 0.0167;
+  q_vec(3) = 0;
+  q_vec(4) = -0.0;
+  q_vec(5) = -0.0;
+  q_vec(6) = 0;
+
+  affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec, "psm1_dh");
+
+  std::cout << "q_vec#" << "fwd_kin_solve() --- affine_gripper_wrt_base.translation():" << std::endl;
+  std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
+
+  affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec, "psm_generic");
+
+  std::cout << "q_vec#" << "fwd_kin_solve() --- affine_gripper_wrt_base.translation():" << std::endl;
+  std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
 
   return 1;
 }

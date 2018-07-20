@@ -203,7 +203,7 @@ protected:
   {
     return affine_frame0_wrt_base_.inverse() * affine_products_[i];
   };
-private:
+public:
   /**
    * @brief Given a vector of joint states in DaVinci coords, convert these into
    * equivalent DH parameters, theta and d

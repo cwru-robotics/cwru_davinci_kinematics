@@ -73,6 +73,8 @@ public:
 
   int ik_solve(Eigen::Affine3d const& desired_hand_pose, std::string kinematic_set_name); // is this necessary?
   int ik_solve_generic(Eigen::Affine3d const& desired_hand_pose);
+  int ik_solve_refined(Eigen::Affine3d const& desired_hand_pose,
+                       std::string kinematic_set_name);
   bool solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
                          Eigen::VectorXd &q_ik,
                          std::string kinematic_set_name);

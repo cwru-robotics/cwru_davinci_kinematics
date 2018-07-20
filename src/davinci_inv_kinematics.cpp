@@ -930,33 +930,45 @@ Vectorq7x1 Inverse::compute_q456(Eigen::Vector3d q123, Eigen::Vector3d z_vec4)
 int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose,
                       std::string kinematic_set_name) {
 
+  // TODO do we really need this?
 
-  // before doing anything else, premultiply to get everything in terms of the DH_frame_0.
-  Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
+//  // before doing anything else, premultiply to get everything in terms of the DH_frame_0.
+//  Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
+//
+//  desired_hand_pose_map_[kinematic_set_name] = affine_frame0_wrt_base.inverse() * desired_hand_pose;
+//
+//  Eigen::Vector3d z4_wrt_3, O_6_wrt_4, xvec6_wrt_5, O_5_wrt_base, zvec5_wrt_base;
+//  Eigen::Vector3d des_tip_origin, zvec_tip_wrt_base;
+//  Eigen::VectorXd theta_vec, d_vec;
+//  Eigen::Matrix3d R_tip_wrt_base;
+//
+//  q_vec_soln_(0) = -10.0;
+//  q_vec_soln_(1) = -10.0;
+//  q_vec_soln_(2) = -10.0;
+//  q_vec_soln_(3) = -10.0;
+//  q_vec_soln_(4) = -10.0;
+//  q_vec_soln_(5) = -10.0;
+//  q_vec_soln_(6) = -10.0;
+//
+//  R_tip_wrt_base = desired_hand_pose_map_[kinematic_set_name].linear();
+//  zvec_tip_wrt_base = R_tip_wrt_base.col(2);
+//  O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base * gripper_jaw_length;
+//
+//  Eigen::Vector3d w_wrt_base[2];
+//  Eigen::Vector3d z_vec4[2];
+//
+//  compute_w_from_tip(desired_hand_pose_, z_vec4[0], z_vec4[1], w_wrt_base[0], w_wrt_base[1]);
 
-  desired_hand_pose_map_[kinematic_set_name] = affine_frame0_wrt_base.inverse() * desired_hand_pose;
 
-  Eigen::Vector3d z4_wrt_3, O_6_wrt_4, xvec6_wrt_5, O_5_wrt_base, zvec5_wrt_base;
-  Eigen::Vector3d des_tip_origin, zvec_tip_wrt_base;
-  Eigen::VectorXd theta_vec, d_vec;
-  Eigen::Matrix3d R_tip_wrt_base;
+}
 
-  q_vec_soln_(0) = -10.0;
-  q_vec_soln_(1) = -10.0;
-  q_vec_soln_(2) = -10.0;
-  q_vec_soln_(3) = -10.0;
-  q_vec_soln_(4) = -10.0;
-  q_vec_soln_(5) = -10.0;
-  q_vec_soln_(6) = -10.0;
 
-  R_tip_wrt_base = desired_hand_pose_map_[kinematic_set_name].linear();
-  zvec_tip_wrt_base = R_tip_wrt_base.col(2);
-  O_5_wrt_base = des_tip_origin - zvec_tip_wrt_base * gripper_jaw_length;
 
-  Eigen::Vector3d w_wrt_base[2];
-  Eigen::Vector3d z_vec4[2];
 
-  compute_w_from_tip(desired_hand_pose_, z_vec4[0], z_vec4[1], w_wrt_base[0], w_wrt_base[1]);
+int Inverse::ik_solve_refined(Eigen::Affine3d const& desired_hand_pose,
+                              std::string kinematic_set_name) {
+
+
 
 
 
@@ -969,12 +981,18 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose,
 
 
 
+bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
+                                Eigen::VectorXd &q_ik,
+                                std::string kinematic_set_name){
 
 
 
 
 
 
+
+
+}
 
 
 

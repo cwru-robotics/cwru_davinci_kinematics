@@ -968,12 +968,40 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose,
 int Inverse::ik_solve_refined(Eigen::Affine3d const& desired_hand_pose,
                               std::string kinematic_set_name) {
 
+  Eigen::VectorXd q_ik;
+  int count = 0;
 
+  bool jacobian_result;
 
+  // Still using ik_solve with original DH definitions to get an estimate out of the naive model.
+  if (ik_solve(desired_hand_pose) > 0)
+  {
+    q_ik = get_soln();
 
+    ROS_WARN("RN DEBUG 01");
+    std::cout << "q_ik: " << q_ik.transpose() << std::endl;
+    std::cout << "kinematic_set_name: " << kinematic_set_name << std::endl;
 
+    jacobian_result = solve_jacobian_ik(desired_hand_pose, q_ik, kinematic_set_name);
 
+    ROS_WARN("RN DEBUG 02");
 
+    q_vec_soln_refined_map_[kinematic_set_name] = q_ik;
+
+    ROS_WARN("RN DEBUG 03");
+
+    if (jacobian_result == true)
+    {
+      return 1;
+    } else if (jacobian_result == false)
+    {
+      return 0;
+    }
+
+  } else {
+    ROS_ERROR("Cannot get valid initial ik solution!");
+    return -9;
+  }
 
 }
 
@@ -985,31 +1013,136 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
                                 Eigen::VectorXd &q_ik,
                                 std::string kinematic_set_name){
 
+  Eigen::Affine3d A_fwd,A_fwd2;
+  Eigen::Matrix3d R1,R2,R_err;
+  Eigen::Vector3d dxyz,dphi;
+  Eigen::Vector3d dxyz2;
+  Eigen::VectorXd q7(1);
+  Eigen::VectorXd dp,dq,k_rot_axis,q_updated, dq_temp;
+  Eigen::MatrixXd Jacobian;
+
+  dp.resize(6);
+  dq.resize(7);
+  dq_temp.resize(7);
+  q_updated.resize(7);
+  double dtheta;
+
+  q7 << q_ik(6);
+
+  ROS_WARN("RN DEBUG 01a");
+
+  A_fwd = fwd_kin_solve(q_ik, kinematic_set_name);
+
+  ROS_WARN("RN DEBUG 01b");
+
+  R1 = desired_hand_pose.linear();
+  R2 = A_fwd.linear();
+  dxyz = desired_hand_pose.translation()-A_fwd.translation();
+  R_err = R2*R1.transpose();
+  Eigen::AngleAxisd angleAxis(R_err);
+  dtheta = angleAxis.angle();
+  k_rot_axis = angleAxis.axis();
+  dphi = -k_rot_axis*dtheta;
+
+  ROS_WARN("RN DEBUG 01c");
+
+  dp.block<3,1>(0,0) = dxyz;
+  dp.block<3,1>(3,0) = dphi;
+
+  ROS_WARN("RN DEBUG 01d");
+
+  Jacobian = compute_jacobian(q_ik, kinematic_set_name);
+
+  ROS_WARN("RN DEBUG 01e");
+
+  dq = Jacobian.inverse()*dp;
+  dq_temp = dq;
+  dq.resize(7);
+  dq.block<6,1>(0,0) = dq_temp;
+  dq.block<1,1>(6,0) = q7;
+
+  double err_xyz = -1;
+  double err_dtheta = -1;
+  int iteration_count = 0;
+  const int iter_max = 10000;
+  bool close_enough = false; // TODO not used yet
+  bool updated = false;
+  int update_count = 0;
+  double translational_tolerance = 0.0001;
 
 
 
+//see if this is an improvement:
+  while ( (iteration_count < iter_max) && (!close_enough) )
+  {
 
+    iteration_count++;
 
+    // Update q_ik with the current changes.
+    q_updated = q_ik + dq;
+
+    // Calculate the new position the current changes in q_ik would cause
+    A_fwd2 = fwd_kin_solve(q_updated, kinematic_set_name);
+
+    // Calculate the distance form the goal
+    R2 = A_fwd2.linear();
+    R_err = R2*R1.transpose();
+    Eigen::AngleAxisd angleAxis2(R_err);
+    // get dxyz2 and dtheta2
+    dxyz2 = desired_hand_pose.translation()-A_fwd2.translation();
+    double dtheta2 = angleAxis2.angle();
+
+    // See if the distance decrease the gap
+    err_dtheta = fabs(dtheta)-fabs(dtheta2); //want this >0
+    err_xyz = dxyz.norm()-dxyz2.norm(); //want this >0
+
+    // If the result is better rebase q_ik and update the Jacobian, dp and dq acoordingly
+    // Otherwise half the dq, use the same base q_ik and try again
+    if ((err_dtheta>0)||(err_xyz>0)) {
+      updated = true;
+      update_count++;
+
+      q_ik = q_updated; // q_ik rebased
+
+      // redo the Jacobian
+      A_fwd = fwd_kin_solve(q_ik, kinematic_set_name);
+
+      R1 = desired_hand_pose.linear();
+      R2 = A_fwd.linear();
+      dxyz = desired_hand_pose.translation()-A_fwd.translation();
+      R_err = R2*R1.transpose();
+      Eigen::AngleAxisd angleAxis(R_err);
+      dtheta = angleAxis.angle();
+      k_rot_axis = angleAxis.axis();
+      dphi = -k_rot_axis*dtheta;
+
+      dp.block<3,1>(0,0) = dxyz;
+      dp.block<3,1>(3,0) = dphi;
+      Jacobian = compute_jacobian(q_ik, kinematic_set_name);
+
+      dq = Jacobian.inverse()*dp;
+      dq.resize(7);
+      dq.block<1,1>(6,0) = q7;
+
+      // see if we have reduced the tranlational error below our tolerance.
+      if (dxyz.norm() < translational_tolerance)
+      {
+        close_enough = true;
+        std::cout << std::endl << "\e[32m\e[1mdxzy has been reduced to below "
+                  << translational_tolerance*1000 << " mm \e[0m" <<std::endl;
+      }
+
+    } else {
+
+      // std::cout << "(err_dtheta>0)&&(err_xyz>0) failed." << std::endl;
+      dq = dq/2; // then go back to the beginning of this while loop
+
+    }
+
+  } // while
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

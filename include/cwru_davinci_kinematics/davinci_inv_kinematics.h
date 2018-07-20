@@ -37,7 +37,8 @@
 
 namespace davinci_kinematics
 {
-class Inverse:private Forward
+// RN 20/07/18 It used to be private inheritance.
+class Inverse:public Forward
 {
 public:
   /**
@@ -71,18 +72,24 @@ public:
   int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose);
   bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate, Eigen::VectorXd &q_ik);
 
+  // TODO finish the first 2 later.
   int ik_solve(Eigen::Affine3d const& desired_hand_pose, std::string kinematic_set_name); // is this necessary?
   int ik_solve_generic(Eigen::Affine3d const& desired_hand_pose);
+
   int ik_solve_refined(Eigen::Affine3d const& desired_hand_pose,
                        std::string kinematic_set_name);
+
   bool solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
                          Eigen::VectorXd &q_ik,
                          std::string kinematic_set_name);
+
   int ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate,
                               std::string kinematic_set_name);
+
   bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate,
                                 Eigen::VectorXd &q_ik,
                                 std::string kinematic_set_name);
+
   int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose,
                               std::string kinematic_set_name);
 
@@ -103,6 +110,12 @@ public:
   Vectorq7x1 get_soln_refined() const
   {
     return q_vec_soln_refined_;
+  };
+
+  // TODO why this cannot add const at the end like other functions?
+  Vectorq7x1 get_soln_refined(std::string kinematic_set_name)
+  {
+    return q_vec_soln_refined_map_[kinematic_set_name];
   };
 
 

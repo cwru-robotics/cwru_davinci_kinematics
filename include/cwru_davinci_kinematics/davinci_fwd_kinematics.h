@@ -171,7 +171,26 @@ public:
     return gripper_jaw_length_;
   }
 
-protected:
+
+  // RN
+  // Added on 19/07/18 as Mk2 Upgrades.
+
+  Eigen::Affine3d fwd_kin_solve(const Vectorq7x1& q_vec, std::string kinematic_set_name);
+
+  bool loadDHyamlfiles(std::string yaml_name, std::string kenimatic_set_name);
+
+  void resetDhOffsetsMaps();
+
+  void resetDhGenericParams();
+
+  void printAllDhMaps();
+
+  Eigen::MatrixXd compute_jacobian(const Vectorq7x1& q_vec, std::string kinematic_set_name);
+
+
+
+
+ protected:
   /**
    * @brief The following function takes args of DH thetas and d's and returns an affine transformation
    *
@@ -203,7 +222,30 @@ protected:
   {
     return affine_frame0_wrt_base_.inverse() * affine_products_[i];
   };
-public:
+
+
+
+  // RN
+  Eigen::VectorXd theta_DH_offsets_generic_;
+  Eigen::VectorXd dval_DH_offsets_generic_;
+  Eigen::VectorXd DH_a_params_generic_;
+  Eigen::VectorXd DH_alpha_params_generic_;
+  double j3_scale_factor_generic_;
+  std::map<std::string, Eigen::VectorXd> theta_DH_offsets_map_;
+  std::map<std::string, Eigen::VectorXd> dval_DH_offsets_map_;
+  std::map<std::string, Eigen::VectorXd> DH_a_params_map_;
+  std::map<std::string, Eigen::VectorXd> DH_alpha_params_map_;
+  std::map<std::string, double> j3_scale_factor_map_;
+
+  std::map<std::string, Vectorq7x1> current_joint_state__map_;
+  std::map<std::string, Eigen::MatrixXd> Jacobian_map_;
+
+  std::map<std::string, Eigen::Affine3d> affine_gripper_wrt_base_map_;
+  std::map<std::string, Eigen::Affine3d> affine_wrist_wrt_base_map_;
+  std::map<std::string, std::vector<Eigen::Affine3d>> affine_products_map_;
+
+
+private:
   /**
    * @brief Given a vector of joint states in DaVinci coords, convert these into
    * equivalent DH parameters, theta and d
@@ -245,13 +287,6 @@ public:
   // TODO refactor after functional tests
 
 
-  bool loadDHyamlfiles(std::string yaml_name, std::string kenimatic_set_name);
-
-  void resetDhOffsetsMaps();
-
-  void resetDhGenericParams();
-
-  void printAllDhMaps();
 
   /**
    * @brief Given a vector of joint states in Davinci coords, convert these into
@@ -267,7 +302,7 @@ public:
                                Eigen::VectorXd &thetas_DH_vec,
                                Eigen::VectorXd &dvals_DH_vec);
 
-  Eigen::Affine3d fwd_kin_solve(const Vectorq7x1& q_vec, std::string kinematic_set_name);
+
 
   Vectorq7x1 convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec,
                                      const Eigen::VectorXd &dvals_DH_vec,
@@ -282,7 +317,7 @@ public:
                         const Eigen::VectorXd& d_vec,
                         std::string kinematic_set_name);
 
-  Eigen::MatrixXd compute_jacobian(const Vectorq7x1& q_vec, std::string kinematic_set_name);
+
 
 
 
@@ -334,24 +369,7 @@ public:
    */
   Eigen::VectorXd dval_DH_offsets_;
 
-  // RN
-  Eigen::VectorXd theta_DH_offsets_generic_;
-  Eigen::VectorXd dval_DH_offsets_generic_;
-  Eigen::VectorXd DH_a_params_generic_;
-  Eigen::VectorXd DH_alpha_params_generic_;
-  double j3_scale_factor_generic_;
-  std::map<std::string, Eigen::VectorXd> theta_DH_offsets_map_;
-  std::map<std::string, Eigen::VectorXd> dval_DH_offsets_map_;
-  std::map<std::string, Eigen::VectorXd> DH_a_params_map_;
-  std::map<std::string, Eigen::VectorXd> DH_alpha_params_map_;
-  std::map<std::string, double> j3_scale_factor_map_;
 
-  std::map<std::string, Vectorq7x1> current_joint_state__map_;
-  std::map<std::string, Eigen::MatrixXd> Jacobian_map_;
-
-  std::map<std::string, Eigen::Affine3d> affine_gripper_wrt_base_map_;
-  std::map<std::string, Eigen::Affine3d> affine_wrist_wrt_base_map_;
-  std::map<std::string, std::vector<Eigen::Affine3d>> affine_products_map_;
 
 
   /**

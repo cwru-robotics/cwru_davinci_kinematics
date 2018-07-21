@@ -978,17 +978,9 @@ int Inverse::ik_solve_refined(Eigen::Affine3d const& desired_hand_pose,
   {
     q_ik = get_soln();
 
-    ROS_WARN("RN DEBUG 01");
-    std::cout << "q_ik: " << q_ik.transpose() << std::endl;
-    std::cout << "kinematic_set_name: " << kinematic_set_name << std::endl;
-
     jacobian_result = solve_jacobian_ik(desired_hand_pose, q_ik, kinematic_set_name);
 
-    ROS_WARN("RN DEBUG 02");
-
     q_vec_soln_refined_map_[kinematic_set_name] = q_ik;
-
-    ROS_WARN("RN DEBUG 03");
 
     if (jacobian_result == true)
     {
@@ -1029,11 +1021,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
 
   q7 << q_ik(6);
 
-  ROS_WARN("RN DEBUG 01a");
-
   A_fwd = fwd_kin_solve(q_ik, kinematic_set_name);
-
-  ROS_WARN("RN DEBUG 01b");
 
   R1 = desired_hand_pose.linear();
   R2 = A_fwd.linear();
@@ -1044,16 +1032,10 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   k_rot_axis = angleAxis.axis();
   dphi = -k_rot_axis*dtheta;
 
-  ROS_WARN("RN DEBUG 01c");
-
   dp.block<3,1>(0,0) = dxyz;
   dp.block<3,1>(3,0) = dphi;
 
-  ROS_WARN("RN DEBUG 01d");
-
   Jacobian = compute_jacobian(q_ik, kinematic_set_name);
-
-  ROS_WARN("RN DEBUG 01e");
 
   dq = Jacobian.inverse()*dp;
   dq_temp = dq;
@@ -1064,19 +1046,21 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   double err_xyz = -1;
   double err_dtheta = -1;
   int iteration_count = 0;
-  const int iter_max = 10000;
-  bool close_enough = false; // TODO not used yet
+  const int iter_max = 100000;
+  bool close_enough = false;
   bool updated = false;
   int update_count = 0;
   double translational_tolerance = 0.0001;
-
-
 
 //see if this is an improvement:
   while ( (iteration_count < iter_max) && (!close_enough) )
   {
 
     iteration_count++;
+
+    if (iteration_count == iter_max) {
+      std::cout << "Max iteration reached." << std::endl;
+    }
 
     // Update q_ik with the current changes.
     q_updated = q_ik + dq;
@@ -1134,12 +1118,36 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
 
     } else {
 
-      // std::cout << "(err_dtheta>0)&&(err_xyz>0) failed." << std::endl;
+//      std::cout << "(err_dtheta>0)&&(err_xyz>0) failed." << std::endl;
       dq = dq/2; // then go back to the beginning of this while loop
 
     }
 
   } // while
+
+  // Report
+  if (update_count > 0)
+  {
+    std::cout << std::endl << "\e[1m\e[32mJacobian did improve solution.\e[0m" << std::endl;
+
+    if (dxyz.norm() < translational_tolerance)
+    {
+      std::cout << "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
+                                 << std::endl;
+    } else
+    {
+      std::cout << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
+    }
+
+    std::cout << "fabs(dtheta): " << fabs(dtheta) << std::endl;
+
+    return true;
+  } else if (update_count == 0)
+  {
+    std::cout << std::endl << "\e[31m\e[1mJacobian did NOT improve solution even the slightest..\e[0m" << std::endl
+                               << "q_ik unchanged.." << std::endl;
+    return false;
+  }
 
 
 }

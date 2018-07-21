@@ -476,8 +476,6 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
 
   // Also initialise related variables if needed.
 
-  ROS_WARN("RN DEBUG 01a2aa");
-  std::cout << " theta_DH_offsets_map_[kinematic_set_name]: " <<  theta_DH_offsets_map_[kinematic_set_name].transpose() << std::endl;
 
 
 
@@ -575,18 +573,14 @@ void Forward::printAllDhMaps() {
 
 Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec, std::string kinematic_set_name) {
 
-  ROS_WARN("RN DEBUG 01a1");
 
   current_joint_state__map_[kinematic_set_name] = q_vec;
 
-  ROS_WARN("RN DEBUG 01a2");
 
   Eigen::VectorXd thetas_DH_vec, dvals_DH_vec;
   convert_qvec_to_DH_vecs(q_vec, thetas_DH_vec, dvals_DH_vec, kinematic_set_name);
 
-  ROS_WARN("RN DEBUG 01a3");
   fwd_kin_solve_DH(thetas_DH_vec, dvals_DH_vec, kinematic_set_name);
-  ROS_WARN("RN DEBUG 01a4");
 
   return affine_gripper_wrt_base_map_[kinematic_set_name];
 
@@ -601,24 +595,16 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
   thetas_DH_vec.resize(7);
   thetas_DH_vec = theta_DH_offsets_map_[kinematic_set_name];
 
-  ROS_WARN("RN DEBUG 01a2a");
-  std::cout << " theta_DH_offsets_map_[kinematic_set_name]: " <<  theta_DH_offsets_map_[kinematic_set_name].transpose() << std::endl;
 
 
   for (int i = 0; i < 7; i++)
   {
-    ROS_WARN("RN DEBUG 01a2a1");
-    std::cout << "current i: " << i << std::endl;
 
     // skip the linear joint.
     if (i == 2) continue;
-    ROS_WARN("RN DEBUG 01a2a2");
-    std::cout << "thetas_DH_vec: " << thetas_DH_vec.transpose() << std::endl;
-
     thetas_DH_vec(i)+= q_vec(i);
   }
 
-  ROS_WARN("RN DEBUG 01a2b");
 
   dvals_DH_vec.resize(7);
   dvals_DH_vec = dval_DH_offsets_map_[kinematic_set_name];
@@ -674,7 +660,6 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec,
 Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
                                           std::string kinematic_set_name) {
 
-  ROS_WARN("RN DEBUG 01d1");
 
   Eigen::MatrixXd temp_jacobian;
   temp_jacobian = Eigen::MatrixXd::Zero(6, 6);
@@ -683,7 +668,6 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   fwd_kin_solve(q_vec, kinematic_set_name);
 
 
-  ROS_WARN("RN DEBUG 01d2");
 
   Eigen::Vector3d z_axis;
   Eigen::Vector3d vec_tip_minus_Oi_wrt_base;
@@ -692,8 +676,6 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   Eigen::Vector3d z_axis0 = affine_frame0_wrt_base_.linear().col(2);
   std::vector <Eigen::Affine3d> affine_products;
 
-  ROS_WARN("RN DEBUG 01d3");
-  std::cout << "z_axis0: " << z_axis0.transpose() << std::endl;
 
 
   // angular Jacobian is just the z axes of each revolute joint (expressed in base frame);
@@ -703,7 +685,6 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   // Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);
   temp_jacobian.block<3, 1>(3, 0) = z_axis0;
 
-  ROS_WARN("RN DEBUG 01d4");
 
   vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_frame0_wrt_base_.translation();
   temp_jacobian.block<3, 1>(0, 0) = z_axis0.cross(vec_tip_minus_Oi_wrt_base);

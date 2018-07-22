@@ -209,6 +209,8 @@ Forward::Forward()
 
   // resize MatrixXd Jacobian_ and initialize terms to 0's
   Jacobian_ = Eigen::MatrixXd::Zero(6, 6);
+
+  resetDhGenericParams();
 }
 
 

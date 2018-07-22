@@ -154,7 +154,7 @@ private:
 
 
 
-  Forward davinci_fwd_solver_;
+//  Forward davinci_fwd_solver_;
 
   /**
    * @brief verifies that the proposed list of joint positions fit the hardware joint limits.

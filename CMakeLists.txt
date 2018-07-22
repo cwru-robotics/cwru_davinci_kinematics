@@ -106,6 +106,14 @@ target_link_libraries(test_dh_params
         ${catkin_LIBRARIES}
         )
 
+add_executable(test_new_ik_err examples/test_new_ik_err.cpp)
+
+target_link_libraries(test_new_ik_err
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+
 
 file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)
 file(GLOB_RECURSE TEST_FILES_CPP test/*.cpp)

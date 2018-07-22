@@ -56,14 +56,19 @@ int main(int argc, char **argv)
   }
 
 
-  dvrk_inverse.resetDhGenericParams();
+//  dvrk_inverse.resetDhGenericParams();
   dvrk_inverse.resetDhOffsetsMaps();
   dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
   dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 
+//  dvrk_forward.resetDhGenericParams();
+  dvrk_forward.resetDhOffsetsMaps();
+  dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
+  dvrk_forward.loadDHyamlfiles("psm_generic","psm_generic");
+
 //  dvrk_inverse.printAllDhMaps();
 
-  affine_gripper_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec, "psm1_dh");
+  affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec, "psm1_dh");
 
   std::cout << "q_vec#" << "fwd_kin_solve() --- affine_gripper_wrt_base.translation():" << std::endl;
   std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;

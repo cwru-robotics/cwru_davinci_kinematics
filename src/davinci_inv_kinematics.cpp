@@ -53,7 +53,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
   q7 << q_ik(6);
 
-  A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_ik);
+  A_fwd = fwd_kin_solve(q_ik);
 
   R1 = desired_hand_pose.linear();
   R2 = A_fwd.linear();
@@ -66,7 +66,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
   dp.block<3,1>(0,0) = dxyz;
   dp.block<3,1>(3,0) = dphi;
-  Jacobian = davinci_fwd_solver_.compute_jacobian(q_ik);
+  Jacobian = compute_jacobian(q_ik);
   dq = Jacobian.inverse()*dp;
   dq_temp = dq;
   dq.resize(7);
@@ -100,7 +100,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
     q_updated = q_ik + dq;
 
     // Calculate the new position the current changes in q_ik would cause
-    A_fwd2 = davinci_fwd_solver_.fwd_kin_solve(q_updated);
+    A_fwd2 = fwd_kin_solve(q_updated);
 
     // Calculate the distance form the goal
     R2 = A_fwd2.linear();
@@ -149,7 +149,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
 
         // redo the Jacobian
-        A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_ik);
+        A_fwd = fwd_kin_solve(q_ik);
 
         R1 = desired_hand_pose.linear();
         R2 = A_fwd.linear();
@@ -162,7 +162,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
         dp.block<3,1>(0,0) = dxyz;
         dp.block<3,1>(3,0) = dphi;
-        Jacobian = davinci_fwd_solver_.compute_jacobian(q_ik);
+        Jacobian = compute_jacobian(q_ik);
 
         dq = Jacobian.inverse()*dp;
         dq.resize(7);
@@ -292,13 +292,13 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
   q7 << q_frozen_ik(6);
 
   // q_frozen_ik SHOULD have the last 4 all 0s.
-  A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_frozen_ik);
+  A_fwd = fwd_kin_solve(q_frozen_ik);
 
   // TODO not sure correct or not tho
   // care only about dxyz, ignore the angular error.
   dxyz = desired_tip_coordinate - A_fwd.translation();
 
-  Jacobian = davinci_fwd_solver_.compute_jacobian(q_frozen_ik);
+  Jacobian = compute_jacobian(q_frozen_ik);
   Jacobian_3x3 = Jacobian.block<3,3>(0,0);
 
   dq123 = Jacobian_3x3.inverse()*dxyz;
@@ -327,7 +327,7 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
     q_updated = q_frozen_ik + dq;
 
     // Calculate the new position the current changes in q_ik would cause
-    A_fwd2 = davinci_fwd_solver_.fwd_kin_solve(q_updated);
+    A_fwd2 = fwd_kin_solve(q_updated);
 
     dxyz2 = desired_tip_coordinate - A_fwd2.translation();
 
@@ -341,11 +341,11 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
       q_frozen_ik = q_updated; // q_frozen_ik rebased
 
       // redo the Jacobian
-      A_fwd = davinci_fwd_solver_.fwd_kin_solve(q_frozen_ik);
+      A_fwd = fwd_kin_solve(q_frozen_ik);
 
       dxyz = desired_tip_coordinate - A_fwd.translation();
 
-      Jacobian = davinci_fwd_solver_.compute_jacobian(q_frozen_ik);
+      Jacobian = compute_jacobian(q_frozen_ik);
       Jacobian_3x3 = Jacobian.block<3, 3>(0, 0);
       dq123 = Jacobian_3x3.inverse() * dxyz;
 
@@ -804,7 +804,6 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     case 0:
     {
     }
-    std::cout << "ik_solve() returning -6. " << std::endl;
     return -6;
 
     case 1:
@@ -813,7 +812,6 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
       err_l_ = err_l[0];
       err_r_ = err_r[0];
     }
-    std::cout << "ik_solve() returning 1. " << std::endl;
     return 1;
 
     default:
@@ -829,7 +827,6 @@ int Inverse::ik_solve(Eigen::Affine3d const& desired_hand_pose)
     return q_sol.size();
   }
   // This is logically unreachable.
-  std::cout << "ik_solve() returning -7. " << std::endl;
   return -7;
 }
 
@@ -1046,7 +1043,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   double err_xyz = -1;
   double err_dtheta = -1;
   int iteration_count = 0;
-  const int iter_max = 100000;
+  const int iter_max = 1000;
   bool close_enough = false;
   bool updated = false;
   int update_count = 0;
@@ -1059,7 +1056,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
     iteration_count++;
 
     if (iteration_count == iter_max) {
-      std::cout << "Max iteration reached." << std::endl;
+      std::cout << "Jacobian Max iteration reached." << std::endl;
     }
 
     // Update q_ik with the current changes.
@@ -1128,7 +1125,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   // Report
   if (update_count > 0)
   {
-    std::cout << std::endl << "\e[1m\e[32mJacobian did improve solution.\e[0m" << std::endl;
+    std::cout << "\e[1m\e[32mJacobian IK has improved the initial solution.\e[0m" << std::endl;
 
     if (dxyz.norm() < translational_tolerance)
     {
@@ -1144,7 +1141,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
     return true;
   } else if (update_count == 0)
   {
-    std::cout << std::endl << "\e[31m\e[1mJacobian did NOT improve solution even the slightest..\e[0m" << std::endl
+    std::cout << std::endl << "\e[31m\e[1mJacobian IK did NOT improve solution even the slightest..\e[0m" << std::endl
                                << "q_ik unchanged.." << std::endl;
     return false;
   }

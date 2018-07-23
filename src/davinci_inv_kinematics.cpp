@@ -324,6 +324,11 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
 
     iteration_count++;
     // Update q_ik with the current changes. q_updated should still have its 4 - 7 all 0s.
+
+    if (iteration_count == iter_max) {
+      std::cout << "Jacobian (frozen) max iteration reached." << std::endl;
+    }
+
     q_updated = q_frozen_ik + dq;
 
     // Calculate the new position the current changes in q_ik would cause
@@ -411,8 +416,6 @@ int Inverse::ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordina
 
   Eigen::Affine3d desired_wrist_pose;
   Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
-
-
 
   q_frozen_ik.resize(7);
 
@@ -1149,10 +1152,215 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
 
 }
 
+int Inverse::ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate,
+                                     std::string kinematic_set_name) {
+
+  Eigen::Vector3d q123;
+  Eigen::VectorXd q_frozen_ik;
+
+  Eigen::VectorXd theta_vec, d_vec;
+  Vectorq7x1 qvec;
+
+  Eigen::Affine3d desired_wrist_pose;
+  Eigen::Affine3d affine_frame0_wrt_base = this->get_frame0_wrt_base();
+
+  q_frozen_ik.resize(7);
+
+  bool jacobian_result;
+
+  Eigen::Vector3d desired_wrist_coordinate, desired_wrist_coordinate_wrt_frame_0;
+  desired_wrist_coordinate = desired_tip_coordinate * (1 - gripper_jaw_length / desired_tip_coordinate.norm());
+
+  desired_wrist_pose.translation() = desired_wrist_coordinate;
+  desired_wrist_pose = affine_frame0_wrt_base.inverse() * desired_wrist_pose;
+  desired_wrist_coordinate_wrt_frame_0 = desired_wrist_pose.translation();
+
+  q123 = q123_from_wrist(desired_wrist_coordinate_wrt_frame_0);
+
+  // get DH vecs from q123
+  theta_vec.resize(7);
+  theta_vec << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+  theta_vec(0) = q123(0);
+  theta_vec(1) = q123(1);
+  d_vec.resize(7);
+  d_vec << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+  d_vec(2) = q123(2);
+
+  // Note taht we still use the generic ik to get an estimate before the result is tested and improved by the Jacobian.
+  qvec = convert_DH_vecs_to_qvec(theta_vec, d_vec);
+
+  q_frozen_ik(0) = qvec(0);
+  q_frozen_ik(1) = qvec(1);
+  q_frozen_ik(2) = qvec(2);
+  q_frozen_ik(3) = 0;
+  q_frozen_ik(4) = 0;
+  q_frozen_ik(5) = 0;
+  q_frozen_ik(6) = 0;
+
+  jacobian_result = solve_jacobian_frozen_ik(desired_tip_coordinate, q_frozen_ik, kinematic_set_name);
+
+  q_vec_soln_frozon_ik_refined_map_[kinematic_set_name] = q_frozen_ik;
+
+  if (jacobian_result == true)
+  {
+    return 1;
+  } else if (jacobian_result == false)
+  {
+    return 0;
+  }
+
+}
 
 
+bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate,
+                              Eigen::VectorXd &q_frozen_ik,
+                              std::string kinematic_set_name) {
+
+  Eigen::Affine3d A_fwd,A_fwd2;
+  Eigen::Matrix3d R1,R2,R_err;
+  Eigen::Vector3d dxyz,dphi,dq123;
+  Eigen::Vector3d dxyz2;
+  Eigen::VectorXd q7(1);
+  Eigen::VectorXd dp,dq,k_rot_axis,q_updated, dq_temp;
+  Eigen::MatrixXd Jacobian;
+
+  // The upper left 3x3 of the original 6x6 Jacobian
+  Eigen::Matrix3d Jacobian_3x3;
+
+  dp.resize(6);
+  dq.resize(7);
+  dq_temp.resize(7);
+  q_updated.resize(7);
+  double dtheta;
+
+  q7 << q_frozen_ik(6);
+
+  // q_frozen_ik SHOULD have the last 4 all 0s.
+  A_fwd = fwd_kin_solve(q_frozen_ik, kinematic_set_name);
+
+  // care only about dxyz, ignore the angular error.
+  dxyz = desired_tip_coordinate - A_fwd.translation();
+
+  Jacobian = compute_jacobian(q_frozen_ik, kinematic_set_name);
+  Jacobian_3x3 = Jacobian.block<3,3>(0,0);
+
+  dq123 = Jacobian_3x3.inverse()*dxyz;
+
+  dq.resize(7);
+  dq.block<3,1>(0,0) = dq123;
+  dq(3) = 0;
+  dq(4) = 0;
+  dq(5) = 0;
+  dq(6) = 0;
+
+  double err_xyz = -1;
+  double err_dtheta = -1;
+  int iteration_count = 0;
+  const int iter_max = 10000;
+  bool close_enough = false;
+  bool updated = false;
+  int update_count = 0;
+  double translational_tolerance = 0.0001;
+  bool debug_print = false;
+
+  while ( (iteration_count < iter_max) && (!close_enough) ) {
+
+    iteration_count++;
+    // Update q_ik with the current changes. q_updated should still have its 4 - 7 all 0s.
+
+    if (iteration_count == iter_max) {
+      std::cout << "Jacobian (frozen) max iteration reached." << std::endl;
+    }
+
+    q_updated = q_frozen_ik + dq;
+
+    // Calculate the new position the current changes in q_ik would cause
+    A_fwd2 = fwd_kin_solve(q_updated, kinematic_set_name);
+
+    dxyz2 = desired_tip_coordinate - A_fwd2.translation();
+
+    err_xyz = dxyz.norm() - dxyz2.norm(); //want this >0
+
+    if (err_xyz > 0) {
+
+      updated = true;
+      update_count++;
+
+      q_frozen_ik = q_updated; // q_frozen_ik rebased
+
+      // redo the Jacobian
+      A_fwd = fwd_kin_solve(q_frozen_ik, kinematic_set_name);
+
+      dxyz = desired_tip_coordinate - A_fwd.translation();
+
+      Jacobian = compute_jacobian(q_frozen_ik, kinematic_set_name);
+      Jacobian_3x3 = Jacobian.block<3, 3>(0, 0);
+      dq123 = Jacobian_3x3.inverse() * dxyz;
+
+      dq.resize(7); // not necessary...
+      dq.block<3, 1>(0, 0) = dq123;
+      dq(3) = 0;
+      dq(4) = 0;
+      dq(5) = 0;
+      dq(6) = 0;
+
+      // see if we have reduced the TRANSLATION error to below our tolerance.
+      if (dxyz.norm() < translational_tolerance) {
+        close_enough = true;
+        if (debug_print) {
+          std::cout << std::endl << "\e[32m\e[1mFROZEN dxzy has been reduced to below "
+                    << translational_tolerance * 1000 << " mm \e[0m" << std::endl;
+        }
+      }
+
+    } else {
+      dq = dq / 2; // then go back to the beginning of this while loop
+    }
+
+  } // while
+
+  // Report
+  if (update_count > 0)
+  {
+    std::cout << "\e[1m\e[32mJacobian IK has improved the initial solution.\e[0m" << std::endl;
+
+    if (dxyz.norm() < translational_tolerance)
+    {
+      std::cout << "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
+                << std::endl;
+    } else
+    {
+      std::cout << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
+    }
+
+    std::cout << "fabs(dtheta): " << fabs(dtheta) << std::endl;
+
+    return true;
+  } else if (update_count == 0)
+  {
+    std::cout << std::endl << "\e[31m\e[1mJacobian IK did NOT improve solution even the slightest..\e[0m" << std::endl
+              << "q_ik unchanged.." << std::endl;
+    return false;
+  }
+
+}
 
 
+int Inverse::ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose,
+                                     std::string kinematic_set_name) {
+
+  int result;
+
+  Eigen::Vector3d desired_tip_coordinate_from_pose;
+
+  // It takes only the coordinate of the pose the orientaion is discarded.
+  desired_tip_coordinate_from_pose = desired_hand_pose.translation();
+
+  result = ik_solve_frozen_refined(desired_tip_coordinate_from_pose, kinematic_set_name);
+  // the q_vec_soln_frozon_ik_refined_ can be obtained by get_soln_frozon_ik_refined()
+  return result;
+
+}
 
 
 

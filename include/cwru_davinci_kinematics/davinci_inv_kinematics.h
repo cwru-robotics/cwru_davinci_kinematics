@@ -72,7 +72,7 @@ public:
   int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose);
   bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate, Eigen::VectorXd &q_ik);
 
-  // TODO finish the first 2 later.
+
   int ik_solve(Eigen::Affine3d const& desired_hand_pose, std::string kinematic_set_name); // is this necessary?
   int ik_solve_generic(Eigen::Affine3d const& desired_hand_pose);
 
@@ -86,12 +86,13 @@ public:
   int ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate,
                               std::string kinematic_set_name);
 
+  int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose,
+                              std::string kinematic_set_name);
+
   bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate,
                                 Eigen::VectorXd &q_ik,
                                 std::string kinematic_set_name);
 
-  int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose,
-                              std::string kinematic_set_name);
 
   void resetAllIkMaps();
 
@@ -123,6 +124,11 @@ public:
   Vectorq7x1 get_soln_frozon_ik_refined() const
   {
     return q_vec_soln_frozon_ik_refined_;
+  };
+
+  Vectorq7x1 get_soln_frozon_ik_refined(std::string kinematic_set_name)
+  {
+    return q_vec_soln_frozon_ik_refined_map_[kinematic_set_name];
   };
 
   /**
@@ -257,6 +263,7 @@ private:
 
   std::map<std::string, Vectorq7x1> q_vec_soln_refined_map_;
   std::map<std::string, Vectorq7x1> q_vec_soln_map_;
+  std::map<std::string, Vectorq7x1> q_vec_soln_frozon_ik_refined_map_;
   std::map<std::string, Eigen::Affine3d> desired_hand_pose_map_; // is thie necessary?
 
   double err_l_;

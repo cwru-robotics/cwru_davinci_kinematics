@@ -27,12 +27,12 @@ int main(int argc, char **argv)
 
   ROS_WARN("Forward test:");
 
-  q_vec(0) = -0.5;
-  q_vec(1) = -0.3;
-  q_vec(2) = 0.0167;
-  q_vec(3) = 0;
-  q_vec(4) = -0.0;
-  q_vec(5) = -0.0;
+  q_vec(0) = 0.38;
+  q_vec(1) = -0.445;
+  q_vec(2) = 0.175;
+  q_vec(3) = -2.19;
+  q_vec(4) = 0.41;
+  q_vec(5) = 0.42;
   q_vec(6) = 0;
 
   std::cout << "q_vec#============INPUT=BY=USER============================" << ": " << std::endl;
@@ -56,12 +56,10 @@ int main(int argc, char **argv)
   }
 
 
-//  dvrk_inverse.resetDhGenericParams();
   dvrk_inverse.resetDhOffsetsMaps();
   dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
   dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 
-//  dvrk_forward.resetDhGenericParams();
   dvrk_forward.resetDhOffsetsMaps();
   dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
   dvrk_forward.loadDHyamlfiles("psm_generic","psm_generic");
@@ -87,6 +85,20 @@ int main(int argc, char **argv)
   affine_gripper_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec_ik, "psm1_dh");
   std::cout << "q_vec_ik#" << "fwd_kin_solve() --- affine_gripper_wrt_base.translation():" << std::endl;
   std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
+
+
+  if (dvrk_inverse.ik_solve_frozen_refined(affine_gripper_wrt_base, "psm1_dh") > 0) {
+
+    q_vec_ik = dvrk_inverse.get_soln_frozon_ik_refined("psm1_dh");
+    std::cout << "q_vec_ik#==========FROZEN===============================" << ": " << std::endl;
+    std::cout << q_vec_ik.transpose() << std::endl << std::endl;
+    std::cout << "Expect to see the result is identical to q_vec" << std::endl;
+  }
+
+  affine_gripper_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec_ik, "psm1_dh");
+  std::cout << "q_vec_ik#" << "fwd_kin_solve() --- affine_gripper_wrt_base.translation():" << std::endl;
+  std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
+
 
 
 

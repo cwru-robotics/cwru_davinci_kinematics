@@ -39,11 +39,11 @@ int main(int argc, char **argv)
   dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
   dvrk_forward.loadDHyamlfiles("psm_generic","psm_generic");
 
-  int test_target = 50;
+  int test_target = 10000;
 
   for (int itries = 0; itries < test_target; itries++)
   {
-    std::cout << "TEST#" << itries << std::endl;
+    std::cout <<std::endl<< "TEST#" << itries << std::endl;
 
     dvrk_forward.gen_rand_legal_jnt_vals(q_vec);
 
@@ -111,6 +111,11 @@ int main(int argc, char **argv)
   printf("err_cnt = %d, tip_err_cnt = %d\n", err_cnt, tip_err_cnt);
   std::cout << "tip_err_sum: " << tip_err_sum << std::endl;
   printf("tip_err_ave = %f\n", tip_err_ave);
+
+
+
+
+
 
   return 1;
 }

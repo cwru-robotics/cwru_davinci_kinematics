@@ -1059,7 +1059,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
     iteration_count++;
 
     if (iteration_count == iter_max) {
-      std::cout << "Jacobian Max iteration reached." << std::endl;
+      std::cout <<"[" << kinematic_set_name << "] "<< "Jacobian Max iteration reached." << std::endl;
     }
 
     // Update q_ik with the current changes.
@@ -1112,7 +1112,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
       if (dxyz.norm() < translational_tolerance)
       {
         close_enough = true;
-        std::cout << std::endl << "\e[32m\e[1mdxzy has been reduced to below "
+        std::cout << std::endl <<"[" << kinematic_set_name << "] "<< "\e[32m\e[1mdxzy has been reduced to below "
                   << translational_tolerance*1000 << " mm \e[0m" <<std::endl;
       }
 
@@ -1128,23 +1128,23 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   // Report
   if (update_count > 0)
   {
-    std::cout << "\e[1m\e[32mJacobian IK has improved the initial solution.\e[0m" << std::endl;
+    std::cout << "[" << kinematic_set_name << "] " <<"\e[1m\e[32mJacobian IK has improved the initial solution.\e[0m" << std::endl;
 
     if (dxyz.norm() < translational_tolerance)
     {
-      std::cout << "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
+      std::cout << "[" << kinematic_set_name << "] " <<"And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
                                  << std::endl;
     } else
     {
-      std::cout << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
+      std::cout << "[" << kinematic_set_name << "] " << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
     }
 
-    std::cout << "fabs(dtheta): " << fabs(dtheta) << std::endl;
+    std::cout << "[" << kinematic_set_name << "] " << "fabs(dtheta): " << fabs(dtheta) << std::endl;
 
     return true;
   } else if (update_count == 0)
   {
-    std::cout << std::endl << "\e[31m\e[1mJacobian IK did NOT improve solution even the slightest..\e[0m" << std::endl
+    std::cout << std::endl << "[" << kinematic_set_name << "] " << "\e[31m\e[1mJacobian IK did NOT improve solution even the slightest..\e[0m" << std::endl
                                << "q_ik unchanged.." << std::endl;
     return false;
   }
@@ -1269,7 +1269,7 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
     // Update q_ik with the current changes. q_updated should still have its 4 - 7 all 0s.
 
     if (iteration_count == iter_max) {
-      std::cout << "Jacobian (frozen) max iteration reached." << std::endl;
+      std::cout <<"[" << kinematic_set_name << "] "<< "Jacobian (frozen) max iteration reached." << std::endl;
     }
 
     q_updated = q_frozen_ik + dq;
@@ -1308,7 +1308,7 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
       if (dxyz.norm() < translational_tolerance) {
         close_enough = true;
         if (debug_print) {
-          std::cout << std::endl << "\e[32m\e[1mFROZEN dxzy has been reduced to below "
+          std::cout << std::endl << "[" << kinematic_set_name << "] "<<"\e[32m\e[1mFROZEN dxzy has been reduced to below "
                     << translational_tolerance * 1000 << " mm \e[0m" << std::endl;
         }
       }
@@ -1322,23 +1322,23 @@ bool Inverse::solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordi
   // Report
   if (update_count > 0)
   {
-    std::cout << "\e[1m\e[32mJacobian IK has improved the initial solution.\e[0m" << std::endl;
+    std::cout << "[" << kinematic_set_name << "] "<< "\e[1m\e[32mJacobian IK has improved the initial solution.\e[0m" << std::endl;
 
     if (dxyz.norm() < translational_tolerance)
     {
-      std::cout << "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
+      std::cout << "[" << kinematic_set_name << "] "<< "And the translational error has been reduced to sub-minimeter: " << dxyz.norm() << std::endl
                 << std::endl;
     } else
     {
-      std::cout << "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
+      std::cout << "[" << kinematic_set_name << "] "<< "\e[31mBUT the translational error is stll above 0.1 mm: \e[0m" << dxyz.norm() << std::endl;
     }
 
-    std::cout << "fabs(dtheta): " << fabs(dtheta) << std::endl;
+    std::cout << "[" << kinematic_set_name << "] "<< "fabs(dtheta): " << fabs(dtheta) << std::endl;
 
     return true;
   } else if (update_count == 0)
   {
-    std::cout << std::endl << "\e[31m\e[1mJacobian IK did NOT improve solution even the slightest..\e[0m" << std::endl
+    std::cout << std::endl << "[" << kinematic_set_name << "] "<< "\e[31m\e[1mJacobian IK did NOT improve solution even the slightest..\e[0m" << std::endl
               << "q_ik unchanged.." << std::endl;
     return false;
   }

@@ -288,20 +288,6 @@ private:
 
 
 
-  /**
-   * @brief Given a vector of joint states in Davinci coords, convert these into
-   * equivalent DH parameters according to the given psm_index.
-   *
-   * @param q_vec
-   * @param psm_index
-   * @param thetas_DH_vec
-   * @param dvals_DH_vec
-   */
-  void convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
-                               const int psm_index,
-                               Eigen::VectorXd &thetas_DH_vec,
-                               Eigen::VectorXd &dvals_DH_vec);
-
 
 
   Vectorq7x1 convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec,

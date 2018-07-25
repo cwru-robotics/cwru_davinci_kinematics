@@ -693,6 +693,7 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   // 2nd joint:
   // refer to previous joint's z axis
   affine_products = affine_products_map_[kinematic_set_name];
+
   R = affine_products[0].linear();
   z_axis = R.col(2);
   // Block of size (p,q), starting at (i,j) matrix.block<p,q>(i,j);

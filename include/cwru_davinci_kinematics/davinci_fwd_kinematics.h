@@ -151,6 +151,7 @@ public:
   Eigen::Affine3d get_gripper_wrt_frame6() const;
 
   Eigen::Affine3d get_wrist_wrt_base();
+  Eigen::Affine3d get_wrist_wrt_base(std::string kinematic_set_name);
 
   /**
    * @brief sets the transform from the joint frame 6 frame to the gripper frame.

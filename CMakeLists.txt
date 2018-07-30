@@ -114,6 +114,14 @@ target_link_libraries(test_new_ik_err
         ${catkin_LIBRARIES}
         )
 
+add_executable(psm_intrinsic_calibration_auxiliary examples/psm_intrinsic_calibration_auxiliary.cpp)
+
+target_link_libraries(psm_intrinsic_calibration_auxiliary
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+
 
 file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)
 file(GLOB_RECURSE TEST_FILES_CPP test/*.cpp)

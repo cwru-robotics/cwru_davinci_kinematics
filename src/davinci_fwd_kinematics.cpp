@@ -262,6 +262,14 @@ Eigen::Affine3d Forward::get_wrist_wrt_base() // RN
   return affine_wrist_wrt_base_;
 }
 
+
+Eigen::Affine3d Forward::get_wrist_wrt_base(std::string kinematic_set_name) // RN
+{
+  return this->affine_wrist_wrt_base_map_[kinematic_set_name];
+}
+
+
+
 Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec)
 {
   current_joint_state_ = q_vec;
@@ -611,6 +619,11 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
   dvals_DH_vec.resize(7);
   dvals_DH_vec = dval_DH_offsets_map_[kinematic_set_name];
   dvals_DH_vec(2) += j3_scale_factor_map_[kinematic_set_name]*q_vec(2);
+
+  ROS_WARN("RN DEBUG");
+  std::cout << "q_vec: " << q_vec.transpose() << std::endl;
+  std::cout << "thetas: " << thetas_DH_vec.transpose() << std::endl;
+  std::cout << "dvals: " << dvals_DH_vec.transpose() << std::endl;
 
 }
 

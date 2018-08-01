@@ -11,7 +11,7 @@
 #include <cwru_davinci_kinematics/davinci_inv_kinematics.h>
 
 
-void printInfo(Eigen::Vector3d test_pt) {
+Eigen::Affine3d printInfo(Eigen::Vector3d test_pt) {
 
   davinci_kinematics::Forward dvrk_forward;
   davinci_kinematics::Inverse dvrk_inverse;
@@ -46,32 +46,47 @@ void printInfo(Eigen::Vector3d test_pt) {
     ROS_WARN("Failed to get a solution");
   }
 
+  return affine_wrist_wrt_base;
+
 }
 
 int main(int argc, char **argv)
 {
   Eigen::Vector3d test_pt;
+  std::vector<Eigen::Affine3d> wrist_affines;
+
+  wrist_affines.clear();
+
   test_pt << 0.03,0.02,-0.16;
-  printInfo(test_pt);
+  wrist_affines.push_back(printInfo(test_pt));
   test_pt << -0.01,0.02,-0.16;
-  printInfo(test_pt);
+  wrist_affines.push_back(printInfo(test_pt));
 
   test_pt << 0.03,0.06,-0.16;
-  printInfo(test_pt);
+  wrist_affines.push_back(printInfo(test_pt));
   test_pt << -0.01,0.06, -0.16;
-  printInfo(test_pt);
+  wrist_affines.push_back(printInfo(test_pt));
 
   test_pt << 0.03,0.02,-0.20;
-  printInfo(test_pt);
+  wrist_affines.push_back(printInfo(test_pt));
   test_pt << -0.01,0.02,-0.20;
-  printInfo(test_pt);
+  wrist_affines.push_back(printInfo(test_pt));
 
   test_pt << 0.03,0.06,-0.20;
-  printInfo(test_pt);
+  wrist_affines.push_back(printInfo(test_pt));
   test_pt << -0.01,0.06, -0.20;
-  printInfo(test_pt);
+  wrist_affines.push_back(printInfo(test_pt));
 
-
+  std::cout << "% ---" << std::endl;
+  std::cout << "wrist_pt_1 = [" << wrist_affines[0].translation().transpose()  << " 1];" << std::endl;
+  std::cout << "wrist_pt_2 = [" << wrist_affines[1].translation().transpose()  << " 1];" << std::endl;
+  std::cout << "wrist_pt_3 = [" << wrist_affines[2].translation().transpose()  << " 1];" << std::endl;
+  std::cout << "wrist_pt_4 = [" << wrist_affines[3].translation().transpose()  << " 1];" << std::endl;
+  std::cout << "wrist_pt_5 = [" << wrist_affines[4].translation().transpose()  << " 1];" << std::endl;
+  std::cout << "wrist_pt_6 = [" << wrist_affines[5].translation().transpose()  << " 1];" << std::endl;
+  std::cout << "wrist_pt_7 = [" << wrist_affines[6].translation().transpose()  << " 1];" << std::endl;
+  std::cout << "wrist_pt_8 = [" << wrist_affines[7].translation().transpose()  << " 1];" << std::endl;
+  std::cout << "% ---" << std::endl;
 
   return 1;
 }

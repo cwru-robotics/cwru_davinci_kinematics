@@ -16,30 +16,31 @@ void printInfo(Eigen::Vector3d test_pt) {
   davinci_kinematics::Forward dvrk_forward;
   davinci_kinematics::Inverse dvrk_inverse;
 
-  Eigen::Affine3d affine_wrist_wrt_base;
+  Eigen::Affine3d affine_wrist_wrt_base, affine_tip_wrt_base;
 
   davinci_kinematics::Vectorq7x1 q_vec_ik;
 
   dvrk_inverse.resetDhOffsetsMaps();
   dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
+  dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh_sim");
   dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 
-  dvrk_forward.resetDhOffsetsMaps();
-  dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
-  dvrk_forward.loadDHyamlfiles("psm_generic","psm_generic");
-
-  if (dvrk_inverse.ik_solve_frozen_refined(test_pt, "psm1_dh") > 0) {
+  if (dvrk_inverse.ik_solve_frozen_refined(test_pt, "psm1_dh_sim") > 0) {
 
     ROS_INFO("Got a Frozen IK solution");
-    q_vec_ik = dvrk_inverse.get_soln_frozon_ik_refined("psm1_dh");
+    q_vec_ik = dvrk_inverse.get_soln_frozon_ik_refined("psm1_dh_sim");
     std::cout << "q_vec_ik: " << std::endl << q_vec_ik.transpose() << std::endl;
 
-    dvrk_inverse.fwd_kin_solve(q_vec_ik, "psm1_dh");
+    affine_tip_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec_ik, "psm1_dh_sim");
 
-    affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base("psm1_dh");
+    affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base("psm1_dh_sim");
+
 
     std::cout << "affine_wrist_wrt_base: " << std::endl
               << affine_wrist_wrt_base.translation().transpose() << std::endl;
+
+//    std::cout << "affine_tip_wrt_base: " << std::endl
+//              << affine_tip_wrt_base.translation().transpose() << std::endl;
 
   } else {
     ROS_WARN("Failed to get a solution");

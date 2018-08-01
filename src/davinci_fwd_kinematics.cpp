@@ -236,7 +236,7 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::Ve
     theta = theta_vec(i);
     xform = computeAffineOfDH(a, d, alpha, theta);
     affines_i_wrt_iminus1[i]= xform;
-  }
+      }
   affine_products_.resize(7);
   affine_products_[0] =  affine_frame0_wrt_base_ * affines_i_wrt_iminus1[0];
   // RN Note that it starts from 1.
@@ -620,11 +620,6 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
   dvals_DH_vec = dval_DH_offsets_map_[kinematic_set_name];
   dvals_DH_vec(2) += j3_scale_factor_map_[kinematic_set_name]*q_vec(2);
 
-  ROS_WARN("RN DEBUG");
-  std::cout << "q_vec: " << q_vec.transpose() << std::endl;
-  std::cout << "thetas: " << thetas_DH_vec.transpose() << std::endl;
-  std::cout << "dvals: " << dvals_DH_vec.transpose() << std::endl;
-
 }
 
 
@@ -663,6 +658,9 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec,
 
   // RN added for wrist pt coordinate w/rt base frame
   affine_wrist_wrt_base_map_[kinematic_set_name] = affine_products[2];
+
+
+
 
   // Also include the newly calculated affine products into its map.
   affine_products_map_[kinematic_set_name] = affine_products;

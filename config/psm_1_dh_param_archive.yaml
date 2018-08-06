@@ -1,0 +1,72 @@
+# 01
+# Note: Average Result from 20180730 test group. The data set was acquired by moving the Polaris to 7 different locations that covers the angle of the Polaris to base frame y from -90 degrees to +90 degrees. The base frame z is anti-parallel to gravity. 
+
+# ---
+# DH_0 TO DH_1 FRAME
+theta_1: 3.141593 
+alpha_1: -1.5635662857
+a_1: 0.0053527143
+d_1: 0.000000 
+
+# DH_1 TO DH_2 FRAME
+theta_2: -1.5653778571
+alpha_2: 1.5610581429
+a_2: 0.0013977143
+d_2: -0.0030805714
+# Note. Would be better if we can use d_2: -0.0060977143
+
+# DH_2 TO DH_3 FRAME
+d_3: -0.0089284286
+j3_scale_factor: 0.988825
+# ---
+
+
+
+# 02
+# Note: Result from 20180801 test group. The data set was taken once at the same Polaris 0 deg configuration. The base frame z is anti-parallel to gravity. 
+
+# ---
+# DH_0 TO DH_1 FRAME
+theta_1: 3.141593 
+alpha_1: -1.563676
+a_1: 0.005407
+d_1: 0.000000 
+
+# DH_1 TO DH_2 FRAME
+theta_2: -1.568422
+alpha_2: 1.561059
+a_2: 0.000816
+d_2: -0.00284
+
+# DH_2 TO DH_3 FRAME
+d_3: -0.008385
+j3_scale_factor: 0.989023
+# ---
+
+
+# 03
+# Note: Average Result from 20180805 test group. The data sets was taken twice at the same Polaris 0 deg configuration. The base frame z is rotated about its y for about 70 degs.
+
+# ---
+# DH_0 TO DH_1 FRAME
+theta_1: 3.141593 
+alpha_1: -1.5654545
+a_1: 0.0053875
+d_1: 0.000000 
+
+# DH_1 TO DH_2 FRAME
+theta_2: -1.569949
+alpha_2: 1.563795
+a_2: 0.0002515
+d_2: -0.0018725
+
+# DH_2 TO DH_3 FRAME
+d_3: -0.0080085
+j3_scale_factor: 0.9882935
+# ---
+
+
+
+
+
+

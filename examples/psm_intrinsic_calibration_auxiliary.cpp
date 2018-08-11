@@ -23,8 +23,8 @@ Eigen::Affine3d printInfo(Eigen::Vector3d test_pt) {
   dvrk_inverse.resetDhOffsetsMaps();
   dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
     dvrk_inverse.loadDHyamlfiles("psm2_dh","psm2_dh");
-  dvrk_inverse.loadDHyamlfiles("psm1_dh_sim","psm1_dh_sim");
-  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
+//  dvrk_inverse.loadDHyamlfiles("psm1_dh_sim","psm1_dh_sim");
+//  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 
   if (dvrk_inverse.ik_solve_frozen_refined(test_pt, "psm2_dh") > 0) {
 
@@ -59,15 +59,15 @@ Eigen::Affine3d printInfo(davinci_kinematics::Vectorq7x1 q_vec) {
 
   Eigen::Affine3d affine_wrist_wrt_base, affine_tip_wrt_base;
 
-  davinci_kinematics::Vectorq7x1 q_vec_ik;
+//  davinci_kinematics::Vectorq7x1 q_vec_ik;
 
   dvrk_inverse.resetDhOffsetsMaps();
   dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
   dvrk_inverse.loadDHyamlfiles("psm2_dh","psm2_dh");
-  dvrk_inverse.loadDHyamlfiles("psm1_dh_sim","psm1_dh_sim");
-  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
+//  dvrk_inverse.loadDHyamlfiles("psm1_dh_sim","psm1_dh_sim");
+//  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 
-    std::cout << "Your input q_vec: " << std::endl << q_vec_ik.transpose() << std::endl;
+    std::cout << "Your input q_vec: " << std::endl << q_vec.transpose() << std::endl;
 
     affine_tip_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec, "psm2_dh");
 

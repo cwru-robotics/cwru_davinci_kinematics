@@ -65,8 +65,26 @@ d_3: -0.0080085
 j3_scale_factor: 0.9882935
 # ---
 
+# 04
+# Note: Only did one calibration round to get the result. Note that the d2 and d3 changed rather significantly.
 
+# ---
+# DH_0 TO DH_1 FRAME
+theta_1: 3.141593 
+alpha_1: -1.564580 
+a_1: 0.005576 
+d_1: 0.000000 
 
+# DH_1 TO DH_2 FRAME
+theta_2: -1.569678 
+alpha_2: 1.560197 
+a_2: 0.000905 
+d_2: -0.002937 
+j2_scale_factor: 0.9841
+
+# DH_2 TO DH_3 FRAME
+d_3: -0.008814 
+j3_scale_factor: 0.988877 
 
 
 

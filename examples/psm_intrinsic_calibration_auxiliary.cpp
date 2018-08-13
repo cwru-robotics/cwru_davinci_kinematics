@@ -26,15 +26,15 @@ Eigen::Affine3d printInfo(Eigen::Vector3d test_pt) {
 //  dvrk_inverse.loadDHyamlfiles("psm1_dh_sim","psm1_dh_sim");
 //  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 
-  if (dvrk_inverse.ik_solve_frozen_refined(test_pt, "psm2_dh") > 0) {
+  if (dvrk_inverse.ik_solve_frozen_refined(test_pt, "psm1_dh") > 0) {
 
     ROS_INFO("Got a Frozen IK solution");
-    q_vec_ik = dvrk_inverse.get_soln_frozon_ik_refined("psm2_dh");
+    q_vec_ik = dvrk_inverse.get_soln_frozon_ik_refined("psm1_dh");
     std::cout << "q_vec_ik: " << std::endl << q_vec_ik.transpose() << std::endl;
 
-    affine_tip_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec_ik, "psm2_dh");
+    affine_tip_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec_ik, "psm1_dh");
 
-    affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base("psm2_dh");
+    affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base("psm1_dh");
 
 
     std::cout << "affine_wrist_wrt_base: " << std::endl
@@ -69,9 +69,9 @@ Eigen::Affine3d printInfo(davinci_kinematics::Vectorq7x1 q_vec) {
 
     std::cout << "Your input q_vec: " << std::endl << q_vec.transpose() << std::endl;
 
-    affine_tip_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec, "psm2_dh");
+    affine_tip_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec, "psm1_dh");
 
-    affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base("psm2_dh");
+    affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base("psm1_dh");
 
 
     std::cout << "affine_wrist_wrt_base: " << std::endl

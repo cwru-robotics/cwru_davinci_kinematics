@@ -376,6 +376,7 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
   std::string psm_yaml_path;
   YAML::Node psm_dh_param_node;
 
+  double j1_scale_factor;
   double j2_scale_factor;
   double j3_scale_factor;
   Eigen::VectorXd theta_DH_offsets;
@@ -392,6 +393,7 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
   dval_DH_offsets = dval_DH_offsets_generic_;
   DH_a_params = DH_a_params_generic_;
   DH_alpha_params = DH_alpha_params_generic_;
+  j1_scale_factor = j1_scale_factor_generic_;
   j2_scale_factor = j2_scale_factor_generic_;
   j3_scale_factor = j3_scale_factor_generic_;
 
@@ -464,18 +466,24 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
   }
 
   try {
-    j2_scale_factor = psm_dh_param_node["j2_scale_factor"].as<double>();
-  } catch(const std::exception& e) {
-    std::cout << e.what() << std::endl;
-    ROS_WARN("Failed to load j2_scale_factor, will use generic instead.");
-  }
-
-
-  try {
     dval_DH_offsets[2] = psm_dh_param_node["d_3"].as<double>();
   } catch(const std::exception& e) {
     std::cout << e.what() << std::endl;
     ROS_WARN("Failed to load DH d_3, will use generic instead.");
+  }
+
+  try {
+    j1_scale_factor = psm_dh_param_node["j1_scale_factor"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load j1_scale_factor, will use generic instead.");
+  }
+
+  try {
+    j2_scale_factor = psm_dh_param_node["j2_scale_factor"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load j2_scale_factor, will use generic instead.");
   }
 
   try {
@@ -494,6 +502,7 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
   dval_DH_offsets_map_[kinematic_set_name] = dval_DH_offsets;
   DH_a_params_map_[kinematic_set_name] = DH_a_params;
   DH_alpha_params_map_[kinematic_set_name] = DH_alpha_params;
+  j1_scale_factor_map_[kinematic_set_name] = j1_scale_factor;
   j2_scale_factor_map_[kinematic_set_name] = j2_scale_factor;
   j3_scale_factor_map_[kinematic_set_name] = j3_scale_factor;
 
@@ -539,6 +548,7 @@ void Forward::resetDhGenericParams() {
   }
 
   dval_DH_offsets_generic_<< 0, 0, DH_q_offsets[2], 0, 0, 0, 0;
+  j1_scale_factor_generic_ = 1.0;
   j2_scale_factor_generic_ = 1.0;
   j3_scale_factor_generic_ = 1.0;
 
@@ -624,8 +634,12 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
   for (int i = 0; i < 7; i++)
   {
 
-    // skip the linear joint.
-    if (i == 1) {
+    if (i == 0) {
+
+      // Joint 1 has a scale factor to be added here.
+      thetas_DH_vec(i)+= j1_scale_factor_map_[kinematic_set_name]  * q_vec(i);
+
+    } else if (i == 1) {
 
       // Joint 2 has a scale factor to be added here.
       thetas_DH_vec(i)+= j2_scale_factor_map_[kinematic_set_name]  * q_vec(i);
@@ -636,7 +650,7 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
 
     }
 
-
+    // skip the linear joint.
     if (i == 2) continue;
 
   }

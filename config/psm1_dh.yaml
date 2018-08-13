@@ -1,22 +1,30 @@
 # DH PARAMETER RECOMMENDATION
 
-# 04
-# Note: Only did one calibration round to get the result. Note that the d2 and d3 changed rather significantly.
+# 05
+# @Date: 20180813
+# @Data group count: 2
+# @Base frame z: anti-parallel to gravity.
+# @Polaris z: parallel to base frame y.
+# @Notes: Only did one calibration round to get the result. Note that the d2 and d3 changed rather significantly.
+# @Quality test result: 
 
 # ---
 # DH_0 TO DH_1 FRAME
 theta_1: 3.141593 
-alpha_1: -1.564580 
-a_1: 0.005576 
+alpha_1: -1.564613 
+a_1: 0.005736 
 d_1: 0.000000 
 
 # DH_1 TO DH_2 FRAME
-theta_2: -1.569678 
-alpha_2: 1.560197 
-a_2: 0.000905 
-d_2: -0.002937 
-j2_scale_factor: 0.9841
+theta_2: -1.592634 
+alpha_2: 1.560762 
+a_2: 0.001121 
+d_2: -0.002969 
 
 # DH_2 TO DH_3 FRAME
-d_3: -0.008814 
-j3_scale_factor: 0.988877 
+d_3: -0.007410 
+
+# Scale Factors
+j1_scale_factor: 1.0022
+j2_scale_factor: 0.984
+j3_scale_factor: 0.989123

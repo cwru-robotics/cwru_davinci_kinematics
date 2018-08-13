@@ -231,12 +231,14 @@ public:
   Eigen::VectorXd dval_DH_offsets_generic_;
   Eigen::VectorXd DH_a_params_generic_;
   Eigen::VectorXd DH_alpha_params_generic_;
+  double j1_scale_factor_generic_;
   double j2_scale_factor_generic_;
   double j3_scale_factor_generic_;
   std::map<std::string, Eigen::VectorXd> theta_DH_offsets_map_;
   std::map<std::string, Eigen::VectorXd> dval_DH_offsets_map_;
   std::map<std::string, Eigen::VectorXd> DH_a_params_map_;
   std::map<std::string, Eigen::VectorXd> DH_alpha_params_map_;
+  std::map<std::string, double> j1_scale_factor_map_;
   std::map<std::string, double> j2_scale_factor_map_;
   std::map<std::string, double> j3_scale_factor_map_;
 

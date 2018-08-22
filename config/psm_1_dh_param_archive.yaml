@@ -109,21 +109,22 @@ j3_scale_factor: 0.988877
 # ---
 # DH_0 TO DH_1 FRAME
 theta_1: 3.141593 
-alpha_1: -1.564613 
-a_1: 0.005736 
+alpha_1: -1.564064
+a_1: 0.005576
 d_1: 0.000000 
 
 # DH_1 TO DH_2 FRAME
-theta_2: -1.592634 
-alpha_2: 1.560762 
-a_2: 0.001121 
-d_2: -0.002969 
+theta_2: -1.5927655
+alpha_2: 1.561273
+a_2: 0.0010625
+d_2: -0.0029585
 
 # DH_2 TO DH_3 FRAME
-d_3: -0.007410 
+d_3: -0.0075395
 
 # Scale Factors
 j1_scale_factor: 1.0022
 j2_scale_factor: 0.9842
-j3_scale_factor: 0.989123
+j3_scale_factor: 0.9888915
+
 

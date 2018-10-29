@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 
 //  dvrk_forward.loadDHyamlfiles("dh_info_format","dh_info_format");
 
-  int test_target = 10000;
+  int test_target = 1;
 
   for (int itries = 0; itries < test_target; itries++)
   {

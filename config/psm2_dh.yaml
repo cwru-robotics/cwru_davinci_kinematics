@@ -2,21 +2,37 @@
 # Note: Average result from 20180809 Group. The passive joint not tilted.
 # ---
 # DH_0 TO DH_1 FRAME
-theta_1: 3.141593
-alpha_1: -1.5655045
-a_1: 0.003839
+theta_1: 3.141593 
+alpha_1: -1.565842 
+a_1: 0.003998 
 d_1: 0.000000 
 
 # DH_1 TO DH_2 FRAME
-theta_2: 1.5928065
-alpha_2: -1.575889
-a_2: 0.000337
-d_2: 0.001284
+theta_2: 1.596102 
+alpha_2: -1.576262 
+a_2: 0.000215 
+d_2: 0.001068 
 
 # DH_2 TO DH_3 FRAME
-d_3: -0.0089265
+theta_3: 0.000000 
+alpha_3: 0.000000 
+a_3: 0.000000 
+d_3: -0.007802 
+
+# DH_3 TO DH_4 FRAME
+theta_4: -3.051239 
+alpha_4: 1.581951 
+a_4: 0.000202 
+d_4: 0.000004 
+
+# DH_4 TO DH_5 FRAME
+theta_5: 1.619887 
+alpha_5: -1.480664 
+a_5: 0.008283 
+d_5: -0.000054 
+
 
 # Scale Factors
 j1_scale_factor: 1.0
-j2_scale_factor: 0.9732 
-j3_scale_factor: 0.9894155
+j2_scale_factor: 0.9783
+j3_scale_factor: 0.989151 

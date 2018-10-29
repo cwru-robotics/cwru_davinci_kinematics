@@ -21,8 +21,8 @@ Eigen::Affine3d printInfo(Eigen::Vector3d test_pt) {
   davinci_kinematics::Vectorq7x1 q_vec_ik;
 
   dvrk_inverse.resetDhOffsetsMaps();
-  dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
-    dvrk_inverse.loadDHyamlfiles("psm2_dh","psm2_dh");
+   dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
+//    dvrk_inverse.loadDHyamlfiles("psm2_dh","psm2_dh");
 //  dvrk_inverse.loadDHyamlfiles("psm1_dh_sim","psm1_dh_sim");
 //  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 
@@ -63,7 +63,7 @@ Eigen::Affine3d printInfo(davinci_kinematics::Vectorq7x1 q_vec) {
 
   dvrk_inverse.resetDhOffsetsMaps();
   dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
-  dvrk_inverse.loadDHyamlfiles("psm2_dh","psm2_dh");
+//  dvrk_inverse.loadDHyamlfiles("psm2_dh","psm2_dh");
 //  dvrk_inverse.loadDHyamlfiles("psm1_dh_sim","psm1_dh_sim");
 //  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 

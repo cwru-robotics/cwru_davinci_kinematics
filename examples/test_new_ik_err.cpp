@@ -32,12 +32,14 @@ int main(int argc, char **argv)
   // note: with print-outs, takes about 45sec for 10,000 iterations, and got 0 errors
 
   dvrk_inverse.resetDhOffsetsMaps();
-  dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
-  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
+  dvrk_inverse.loadDHyamlfiles("dh_info_format","psm1_dh");
+//  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
 
   dvrk_forward.resetDhOffsetsMaps();
-  dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
-  dvrk_forward.loadDHyamlfiles("psm_generic","psm_generic");
+  dvrk_forward.loadDHyamlfiles("dh_info_format","psm1_dh");
+//  dvrk_forward.loadDHyamlfiles("psm_generic","psm_generic");
+
+//  dvrk_forward.loadDHyamlfiles("dh_info_format","dh_info_format");
 
   int test_target = 10000;
 
@@ -81,7 +83,7 @@ int main(int argc, char **argv)
       tip_err = tip_from_FK - tip_from_FK_of_IK;
       std::cout << "tip err: " << tip_err.transpose() << std::endl;
       printf("jspace errvec norm: %f\n", err_vec.norm());
-      printf("tip pos err norm: %f:\n", tip_err.norm());
+      printf("\033[31mtip pos err norm: %f:\n\033[0m", tip_err.norm());
 
       tip_err_sum = tip_err_sum + tip_err.norm();
 

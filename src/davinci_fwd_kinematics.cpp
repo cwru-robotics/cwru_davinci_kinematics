@@ -389,6 +389,8 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
   DH_a_params.resize(7);
   DH_alpha_params.resize(7);
 
+
+  // Make them equal to generic ones first.
   theta_DH_offsets = theta_DH_offsets_generic_;
   dval_DH_offsets = dval_DH_offsets_generic_;
   DH_a_params = DH_a_params_generic_;
@@ -409,6 +411,8 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
     return false;
   }
 
+  // Load thetas from yaml,
+
   try {
     theta_DH_offsets[0] = psm_dh_param_node["theta_1"].as<double>();
   } catch(const std::exception& e) {
@@ -422,6 +426,31 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
     std::cout << e.what() << std::endl;
     ROS_WARN("Failed to load DH theta_2, will use generic instead.");
   }
+
+  try {
+    theta_DH_offsets[2] = psm_dh_param_node["theta_3"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH theta_3, will use generic instead.");
+  }
+
+  try {
+    theta_DH_offsets[3] = psm_dh_param_node["theta_4"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH theta_4, will use generic instead.");
+  }
+
+  try {
+    theta_DH_offsets[4] = psm_dh_param_node["theta_5"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH theta_5, will use generic instead.");
+  }
+
+
+  // Load alphas from yaml.
+
 
   try {
     DH_alpha_params[0] = psm_dh_param_node["alpha_1"].as<double>();
@@ -438,6 +467,32 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
   }
 
   try {
+    DH_alpha_params[2] = psm_dh_param_node["alpha_3"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH alpha_3, will use generic instead.");
+  }
+
+  try {
+    DH_alpha_params[3] = psm_dh_param_node["alpha_4"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH alpha_4, will use generic instead.");
+  }
+
+  try {
+    DH_alpha_params[4] = psm_dh_param_node["alpha_5"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH alpha_5, will use generic instead.");
+  }
+
+
+  // Load a from yaml.
+
+
+
+  try {
     DH_a_params[0] = psm_dh_param_node["a_1"].as<double>();
   } catch(const std::exception& e) {
     std::cout << e.what() << std::endl;
@@ -450,6 +505,31 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
     std::cout << e.what() << std::endl;
     ROS_WARN("Failed to load DH a_2, will use generic instead.");
   }
+
+  try {
+    DH_a_params[2] = psm_dh_param_node["a_3"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH a_3, will use generic instead.");
+  }
+
+  try {
+    DH_a_params[3] = psm_dh_param_node["a_4"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH a_4, will use generic instead.");
+  }
+
+  try {
+    DH_a_params[4] = psm_dh_param_node["a_5"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH a_5, will use generic instead.");
+  }
+
+
+  // Load d from yaml.
+
 
   try {
     dval_DH_offsets[0] = psm_dh_param_node["d_1"].as<double>();
@@ -471,6 +551,22 @@ bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_n
     std::cout << e.what() << std::endl;
     ROS_WARN("Failed to load DH d_3, will use generic instead.");
   }
+
+  try {
+    dval_DH_offsets[3] = psm_dh_param_node["d_4"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH d_4, will use generic instead.");
+  }
+
+  try {
+    dval_DH_offsets[4] = psm_dh_param_node["d_5"].as<double>();
+  } catch(const std::exception& e) {
+    std::cout << e.what() << std::endl;
+    ROS_WARN("Failed to load DH d_5, will use generic instead.");
+  }
+
+
 
   try {
     j1_scale_factor = psm_dh_param_node["j1_scale_factor"].as<double>();

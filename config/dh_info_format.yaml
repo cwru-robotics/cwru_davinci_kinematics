@@ -1,0 +1,46 @@
+# DH PARAMETER RECOMMENDATION
+
+# PMS1/04 (number in archive folder)
+# @Date: 20180813
+# @Data group count: 1
+# @Base frame z: anti-parallel to gravity.
+# @Polaris z: parallel to base frame y.
+# @Notes: Only did one calibration round to get the result. Note that the d2 and d3 changed rather significantly.
+# @Quality test result: 0.94 mm
+
+# ---
+# DH_0 TO DH_1 FRAME
+theta_1: 3.141593 
+alpha_1: -1.563155 
+a_1: 0.005612 
+d_1: 0.000000 
+
+# DH_1 TO DH_2 FRAME
+theta_2: -1.569594 
+alpha_2: 1.560272 
+a_2: 0.000935 
+d_2: -0.002785 
+
+# DH_2 TO DH_3 FRAME
+theta_3: 0.000000 
+alpha_3: 0.000000 
+a_3: 0.000000 
+d_3: -0.007221 
+
+# DH_3 TO DH_4 FRAME
+theta_4: 0.097740 
+alpha_4: -1.556479 
+a_4: 0.000353 
+d_4: -0.000189 
+
+# DH_4 TO DH_5 FRAME
+theta_5: -1.639551 
+alpha_5: -1.475644 
+a_5: 0.008613 
+d_5: -0.000082 
+
+# Scale Factors
+j1_scale_factor: 1.0022
+j2_scale_factor: 0.98
+j3_scale_factor: 0.988877 
+

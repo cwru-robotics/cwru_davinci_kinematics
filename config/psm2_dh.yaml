@@ -26,10 +26,18 @@ a_4: 0.000202
 d_4: 0.000004 
 
 # DH_4 TO DH_5 FRAME
-theta_5: 1.619887 
-alpha_5: -1.480664 
+# This set of result has been suspended due to huge kinematics software error introduced by this set of number. 
+# We are now only taking a_5, d_5 and use the default (pi/2 or pi) for alpha and theta.
+#theta_5: 1.619887 
+#alpha_5: -1.480664 
+#a_5: 0.008283 
+#d_5: -0.000054 
+
+theta_5: 1.570796
+alpha_5: -1.570796
 a_5: 0.008283 
 d_5: -0.000054 
+
 
 
 # Scale Factors

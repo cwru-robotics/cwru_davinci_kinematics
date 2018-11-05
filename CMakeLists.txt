@@ -122,6 +122,14 @@ target_link_libraries(psm_intrinsic_calibration_auxiliary
         ${catkin_LIBRARIES}
         )
 
+add_executable(test_dh_345 examples/test_dh_345.cpp)
+
+target_link_libraries(test_dh_345
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+
 
 file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)
 file(GLOB_RECURSE TEST_FILES_CPP test/*.cpp)

@@ -700,7 +700,8 @@ void Forward::printAllDhMaps() {
 }
 
 
-Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec, std::string kinematic_set_name) {
+Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec,
+                                       std::string kinematic_set_name) {
 
 
   current_joint_state__map_[kinematic_set_name] = q_vec;
@@ -847,10 +848,13 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   temp_jacobian.block<3, 1>(3, 1) = z_axis;
   vec_tip_minus_Oi_wrt_base = r_tip_wrt_base - affine_products[0].translation();
   temp_jacobian.block<3, 1>(0, 1) = z_axis.cross(vec_tip_minus_Oi_wrt_base);
+
+
   // prismatic joint:
   R = affine_products[1].linear();
   z_axis = R.col(2);
   temp_jacobian.block<3, 1>(0, 2) = z_axis;
+
   // joints 4-6:
   for (int i = 3; i < 6; i++)
   {
@@ -863,6 +867,10 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   }
 
   Jacobian_map_[kinematic_set_name] = temp_jacobian;
+
+  // TODO delete after debugging
+      ROS_WARN("DEBUG temp_jacobian");
+      std::cout << temp_jacobian << std::endl;
 
   // translational Jacobian depends on joint's z-axis and vector from i'th axis to robot tip
   return temp_jacobian;

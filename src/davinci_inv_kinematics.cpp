@@ -987,6 +987,7 @@ int Inverse::ik_solve_refined(Eigen::Affine3d const& desired_hand_pose,
       return 1;
     } else if (jacobian_result == false)
     {
+      ROS_ERROR("Cannot get accurate (0.1 mm) ik solution!");
       return 0;
     }
 
@@ -1010,8 +1011,17 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   Eigen::Vector3d dxyz,dphi;
   Eigen::Vector3d dxyz2;
   Eigen::VectorXd q7(1);
-  Eigen::VectorXd dp,dq,k_rot_axis,q_updated, dq_temp;
+  Eigen::VectorXd dp,dq,k_rot_axis,q_updated, dq_temp, dq_half_base, dq_double_base;
   Eigen::MatrixXd Jacobian;
+
+  double j1_scale_factor, j2_scale_factor, j3_scale_factor;
+
+  j1_scale_factor = j1_scale_factor_map_[kinematic_set_name];
+  j2_scale_factor = j2_scale_factor_map_[kinematic_set_name];
+  j3_scale_factor = j3_scale_factor_map_[kinematic_set_name];
+
+  bool double_attempted(false);
+  bool half_attempted(false);
 
   dp.resize(6);
   dq.resize(7);
@@ -1043,18 +1053,30 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   dq.block<6,1>(0,0) = dq_temp;
   dq.block<1,1>(6,0) = q7;
 
+  //
+//  j2_scale_factor = 1;
+//  j3_scale_factor = 1;
+  dq.block<1,1>(1,0) = dq.block<1,1>(1,0)/j2_scale_factor;
+  dq.block<1,1>(2,0) = dq.block<1,1>(2,0)/j3_scale_factor;
+
+
   double err_xyz = -1;
   double err_dtheta = -1;
   int iteration_count = 0;
-  const int iter_max = 1000;
+
+  const int iter_max = 50;
+
   bool close_enough = false;
   bool updated = false;
   int update_count = 0;
-  double translational_tolerance = 0.0001;
+  double translational_tolerance = 0.0004;
 
 //see if this is an improvement:
   while ( (iteration_count < iter_max) && (!close_enough) )
   {
+
+    // TODO delete
+    ROS_WARN("iteration_count: %d", iteration_count);
 
     iteration_count++;
 
@@ -1062,8 +1084,14 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
       std::cout <<"[" << kinematic_set_name << "] "<< "Jacobian Max iteration reached." << std::endl;
     }
 
+
+
     // Update q_ik with the current changes.
     q_updated = q_ik + dq;
+
+    // TODO delete
+        ROS_WARN("dq: ");
+        std::cout << dq.transpose() << std::endl;
 
     // Calculate the new position the current changes in q_ik would cause
     A_fwd2 = fwd_kin_solve(q_updated, kinematic_set_name);
@@ -1108,6 +1136,8 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
       dq.resize(7);
       dq.block<1,1>(6,0) = q7;
 
+
+
       // see if we have reduced the tranlational error below our tolerance.
       if (dxyz.norm() < translational_tolerance)
       {
@@ -1119,7 +1149,8 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
     } else {
 
 //      std::cout << "(err_dtheta>0)&&(err_xyz>0) failed." << std::endl;
-      dq = dq/2; // then go back to the beginning of this while loop
+       dq = dq/2; // then go back to the beginning of this while loop
+
 
     }
 

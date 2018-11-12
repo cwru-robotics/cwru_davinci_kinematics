@@ -1012,7 +1012,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   Eigen::Vector3d dxyz2;
   Eigen::VectorXd q7(1);
   Eigen::VectorXd dp,dq,k_rot_axis,q_updated, dq_temp, dq_half_base, dq_double_base;
-  Eigen::MatrixXd Jacobian;
+  Eigen::MatrixXd Jacobian, Jacobian_inverse;
 
   double j1_scale_factor, j2_scale_factor, j3_scale_factor;
 
@@ -1056,6 +1056,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   //
 //  j2_scale_factor = 1;
 //  j3_scale_factor = 1;
+  dq.block<1,1>(1,0) = dq.block<1,1>(0,0)/j1_scale_factor;
   dq.block<1,1>(1,0) = dq.block<1,1>(1,0)/j2_scale_factor;
   dq.block<1,1>(2,0) = dq.block<1,1>(2,0)/j3_scale_factor;
 
@@ -1064,19 +1065,16 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
   double err_dtheta = -1;
   int iteration_count = 0;
 
-  const int iter_max = 50;
+  const int iter_max = 15;
 
   bool close_enough = false;
   bool updated = false;
   int update_count = 0;
-  double translational_tolerance = 0.0004;
+  double translational_tolerance = 0.0002;
 
 //see if this is an improvement:
   while ( (iteration_count < iter_max) && (!close_enough) )
   {
-
-    // TODO delete
-    ROS_WARN("iteration_count: %d", iteration_count);
 
     iteration_count++;
 
@@ -1089,9 +1087,7 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
     // Update q_ik with the current changes.
     q_updated = q_ik + dq;
 
-    // TODO delete
-        ROS_WARN("dq: ");
-        std::cout << dq.transpose() << std::endl;
+
 
     // Calculate the new position the current changes in q_ik would cause
     A_fwd2 = fwd_kin_solve(q_updated, kinematic_set_name);
@@ -1132,8 +1128,25 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
       dp.block<3,1>(3,0) = dphi;
       Jacobian = compute_jacobian(q_ik, kinematic_set_name);
 
-      dq = Jacobian.inverse()*dp;
+      Jacobian_inverse = Jacobian.inverse();
+
+//      dq = Jacobian_inverse*dp;
+
       dq.resize(7);
+
+      // TODO check
+      for (int n = 0; n < 6; n++) {
+
+        double dqn(0);
+
+        for (int i = 0; i < 6; i++) {
+          dqn = dqn + Jacobian_inverse(n, i)*dp(i);
+        }
+
+        dq[n] = dqn;
+
+      }
+
       dq.block<1,1>(6,0) = q7;
 
 

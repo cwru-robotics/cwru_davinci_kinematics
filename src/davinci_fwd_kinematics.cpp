@@ -47,8 +47,9 @@ bool Forward::get_jnt_val_by_name(std::string jnt_name, sensor_msgs::JointState 
 
 // given a vector of joint states in DaVinci coords, convert these into
 // equivalent DH parameters, theta and d
-void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec, Eigen::VectorXd &thetas_DH_vec,
-  Eigen::VectorXd &dvals_DH_vec)
+void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
+                                      Eigen::VectorXd &thetas_DH_vec,
+                                      Eigen::VectorXd &dvals_DH_vec)
 {
   thetas_DH_vec.resize(7);
   // +? -?
@@ -63,6 +64,7 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec, Eigen::VectorXd &
   dvals_DH_vec.resize(7);
   dvals_DH_vec = dval_DH_offsets_;
   dvals_DH_vec(2) += q_vec(2); // RN original
+
 	// dvals_DH_vec(2) += 0.988*q_vec(2); // RN 20180220  (TODO adjust DH_a1 at the same time!)
   //dvals_DH_vec(1) += q_vec(2);
 
@@ -105,6 +107,7 @@ int Forward::check_jnts(const Vectorq7x1& q_vec)
   return 0;
 }
 
+
 double Forward::dh_var_to_qvec(double dh_val, int index)
 {
   return (dh_val - DH_q_offsets[index]);
@@ -127,6 +130,7 @@ Vectorq7x1 Forward::convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec
 
   return q_vec;
 }
+
 
 // given 4 DH parameters, compute the corresponding transform as an affine3d
 Eigen::Affine3d Forward::computeAffineOfDH(double a, double d, double alpha, double theta)
@@ -228,6 +232,7 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::Ve
   affines_i_wrt_iminus1.resize(7);
   Eigen::Affine3d xform;
   double a, d, theta, alpha;
+
   for (int i = 0; i < 7; i++)
   {
     a = DH_a_params[i];
@@ -236,7 +241,8 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::Ve
     theta = theta_vec(i);
     xform = computeAffineOfDH(a, d, alpha, theta);
     affines_i_wrt_iminus1[i]= xform;
-      }
+  }
+
   affine_products_.resize(7);
   affine_products_[0] =  affine_frame0_wrt_base_ * affines_i_wrt_iminus1[0];
   // RN Note that it starts from 1.
@@ -248,6 +254,7 @@ void Forward::fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec, const Eigen::Ve
 
   // RN added for wrist pt coordinate w/rt base frame
   affine_wrist_wrt_base_ = affine_products_[2];
+
 }
 
 
@@ -725,9 +732,6 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
   thetas_DH_vec.resize(7);
   thetas_DH_vec = theta_DH_offsets_map_[kinematic_set_name];
 
-  // TODO this is experimental. Include this into the yaml file and modify the code to read it.
-  double j2_scale_factor = 0.9732;
-
   for (int i = 0; i < 7; i++)
   {
 
@@ -742,20 +746,23 @@ void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
       thetas_DH_vec(i)+= j2_scale_factor_map_[kinematic_set_name]  * q_vec(i);
 
     } else {
-
+      // skip the linear joint.
+      if (i == 2) continue;
       thetas_DH_vec(i)+= q_vec(i);
 
     }
 
-    // skip the linear joint.
-    if (i == 2) continue;
+
 
   }
 
 
   dvals_DH_vec.resize(7);
   dvals_DH_vec = dval_DH_offsets_map_[kinematic_set_name];
-  dvals_DH_vec(2) += j3_scale_factor_map_[kinematic_set_name]*q_vec(2);
+
+  // Prismatic
+  dvals_DH_vec(2) = j3_scale_factor_map_[kinematic_set_name]*q_vec(2) + dvals_DH_vec(2);
+
 
 }
 
@@ -826,7 +833,7 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   Eigen::Vector3d z_axis0 = affine_frame0_wrt_base_.linear().col(2);
   std::vector <Eigen::Affine3d> affine_products;
 
-
+  affine_products = affine_products_map_[kinematic_set_name];
 
   // angular Jacobian is just the z axes of each revolute joint (expressed in base frame);
   // for prismatic joint, there is no angular contribution
@@ -840,7 +847,7 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   temp_jacobian.block<3, 1>(0, 0) = z_axis0.cross(vec_tip_minus_Oi_wrt_base);
   // 2nd joint:
   // refer to previous joint's z axis
-  affine_products = affine_products_map_[kinematic_set_name];
+
 
   R = affine_products[0].linear();
   z_axis = R.col(2);
@@ -867,10 +874,6 @@ Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1& q_vec,
   }
 
   Jacobian_map_[kinematic_set_name] = temp_jacobian;
-
-  // TODO delete after debugging
-      ROS_WARN("DEBUG temp_jacobian");
-      std::cout << temp_jacobian << std::endl;
 
   // translational Jacobian depends on joint's z-axis and vector from i'th axis to robot tip
   return temp_jacobian;

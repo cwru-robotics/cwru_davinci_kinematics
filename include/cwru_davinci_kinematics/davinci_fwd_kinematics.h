@@ -188,7 +188,10 @@ public:
 
   Eigen::MatrixXd compute_jacobian(const Vectorq7x1& q_vec, std::string kinematic_set_name);
 
-
+// TODO make private later, it is put here to debug
+  std::map<std::string, double> j1_scale_factor_map_;
+  std::map<std::string, double> j2_scale_factor_map_;
+  std::map<std::string, double> j3_scale_factor_map_;
 
 
  protected:
@@ -238,9 +241,7 @@ public:
   std::map<std::string, Eigen::VectorXd> dval_DH_offsets_map_;
   std::map<std::string, Eigen::VectorXd> DH_a_params_map_;
   std::map<std::string, Eigen::VectorXd> DH_alpha_params_map_;
-  std::map<std::string, double> j1_scale_factor_map_;
-  std::map<std::string, double> j2_scale_factor_map_;
-  std::map<std::string, double> j3_scale_factor_map_;
+
 
   std::map<std::string, Vectorq7x1> current_joint_state__map_;
   std::map<std::string, Eigen::MatrixXd> Jacobian_map_;

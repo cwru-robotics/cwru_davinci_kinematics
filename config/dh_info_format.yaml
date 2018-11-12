@@ -34,10 +34,10 @@ a_4: 0.000353
 d_4: -0.000189 
 
 # DH_4 TO DH_5 FRAME
-#theta_5: -1.639551 
-#alpha_5: -1.475644 
-#a_5: 0.008613
-#d_5: -0.000082 
+theta_5: -1.639551 
+alpha_5: -1.475644 
+a_5: 0.008613
+d_5: -0.000082 
 
 # Scale Factors
 j1_scale_factor: 1.0022
@@ -64,12 +64,12 @@ j3_scale_factor: 0.988877
 #d_4: -0.000189 
 
 # DH_4 TO DH_5 FRAME
-theta_5: -1.570796
-alpha_5: -1.570796
-a_5: 0.00 
-d_5: -0.000082 
+#theta_5: -1.570796
+#alpha_5: -1.570796
+#a_5: 0.00 
+#d_5: -0.000082 
 
-#j1_scale_factor: 1
+#j1_scalloe_factor: 1
 #j2_scale_factor: 1
 #j3_scale_factor: 1
 

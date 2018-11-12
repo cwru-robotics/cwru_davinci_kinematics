@@ -71,7 +71,11 @@ int main(int argc, char **argv)
 
     std::cout << "q_vec_gen_diff.norm(): " << q_vec_gen_diff.norm() << std::endl;
 
+    q_vec << 0, 0, 0, 0, 0, 0, 0;
     dvrk_forward.gen_rand_legal_jnt_vals(q_vec);
+
+//    q_vec = 0.8 * q_vec;
+
     q_vec_gen_diff = q_vec - q_vec_last;
 
     while (q_vec_gen_diff.norm() == 0) {
@@ -81,7 +85,7 @@ int main(int argc, char **argv)
 
     q_vec_last = q_vec;
 
-    std::cout << "using q_vec = " << q_vec.transpose() << std::endl;
+    std::cout << std::endl << "using q_vec = " << q_vec.transpose() << std::endl<< std::endl;
 
     printf("gripper tip frame from FK: \n");
     affine_gripper_wrt_base = dvrk_forward.fwd_kin_solve(q_vec, "psm1_dh");

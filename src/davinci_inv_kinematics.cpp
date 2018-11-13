@@ -199,11 +199,11 @@ bool Inverse::solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen:
 
 	if (debug_print)
 	{
-  std::cout << std::endl << "Total Iteration count: " << iteration_count << std::endl;
-  std::cout << "The q_ik has been updated for \e[1m\e[34m" << update_count << "\e[0m times" << std::endl;
-  std::cout << "\e[1m\e[94m * q_ik AFTER updates: \e[0m" << q_ik.transpose() << std::endl;
-  // std::cout << " * dxyz2.norm(): " << dxyz2.norm() << std::endl;
-  // std::cout << " * dtheta2:      " << dtheta2 << std::endl;
+      std::cout << std::endl << "Total Iteration count: " << iteration_count << std::endl;
+      std::cout << "The q_ik has been updated for \e[1m\e[34m" << update_count << "\e[0m times" << std::endl;
+      std::cout << "\e[1m\e[94m * q_ik AFTER updates: \e[0m" << q_ik.transpose() << std::endl;
+      // std::cout << " * dxyz2.norm(): " << dxyz2.norm() << std::endl;
+      // std::cout << " * dtheta2:      " << dtheta2 << std::endl;
 	}
 
   if (update_count > 0)

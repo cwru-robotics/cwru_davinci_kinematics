@@ -48,6 +48,10 @@ int main(int argc, char **argv)
   Eigen::Affine3d affine_wrist_wrt_base, affine_gripper_wrt_base, affine_frame_wrt_base;
   // wait to start receiving valid tf transforms
 
+  std::vector<Eigen::Affine3d> failed_init_gripper_poses;
+  std::vector<Eigen::Affine3d>::iterator it_affine;
+  failed_init_gripper_poses.clear();
+
   Eigen::Vector3d tip_from_FK, tip_from_FK_of_IK, tip_err;
   // note: with print-outs, takes about 45sec for 10,000 iterations, and got 0 errors
 
@@ -154,6 +158,9 @@ int main(int argc, char **argv)
       printf("itries = %d; err_cnt = %d; tip_err_cnt =%d", itries, err_cnt, tip_err_cnt);
     } else {
       itries--;
+
+      failed_init_gripper_poses.push_back(affine_gripper_wrt_base);
+
     }
   }
 
@@ -171,6 +178,7 @@ int main(int argc, char **argv)
   ROS_INFO("writting the csv file.");
   Eigen::Vector3d current;
   std::ofstream myfile;
+
   myfile.open ("example.csv");
   for (it = category_a.begin(); it != category_a.end(); it++) {
     current = *it;
@@ -189,6 +197,22 @@ int main(int argc, char **argv)
     myfile << (current(0)) << "," << (current(1)) << "," << (current(2)) << ", 4 \n";
   }
   myfile.close();
+
+
+  myfile.open ("failed_ones.csv");
+  for (it_affine = failed_init_gripper_poses.begin(); it_affine!= failed_init_gripper_poses.end(); it_affine++) {
+    Eigen::Affine3d current;
+    Eigen::Vector3d current_vector;
+    current = *it_affine;
+    std::cout << "affine linear (R): " << std::endl;
+    std::cout << current.linear() << std::endl << std::endl;
+    std::cout << "origin: " << current.translation().transpose() << std::endl << std::endl;
+
+    current_vector = current.translation();
+
+    myfile << (current_vector(0)) << "," << (current_vector(1)) << "," << (current_vector(2)) << " \n";
+
+  }
 
 
   return 1;

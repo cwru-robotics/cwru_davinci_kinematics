@@ -24,8 +24,12 @@
 #define CWRU_DAVINCI_KINEMATICS_DAVINCI_FWD_KINEMATICS_H
 
 #include <vector>
+#include <map>
 #include <Eigen/Eigen>
 #include <string>
+
+#include <ros/package.h>
+#include <yaml-cpp/yaml.h>
 
 #include <tf/transform_listener.h>
 #include <sensor_msgs/JointState.h>
@@ -33,7 +37,7 @@
 
 /**
  * @brief The davinci_kinematics namespace is where both the forward and inverse dvrk kinematic libraries are defined
- *  
+ *
  * This is to prevent namespace collisions.
  */
 namespace davinci_kinematics
@@ -46,7 +50,7 @@ typedef Eigen::Matrix<double, 7, 1> Vectorq7x1;
 
 
 /**
- * @brief The Forward kinematics library definition. 
+ * @brief The Forward kinematics library definition.
  *
  * In addition to computing the SE(3) transform based on a set of joint angles,
  * This object also generates a Jacobian matrix.
@@ -64,7 +68,7 @@ public:
     * Code Outline:
     * < 0: A binary indication of which joints are in violation: [-127, -1].
     *   1: While technically reachable, this joint vector places the wrist inside the cannula.
-    *   2: The violation is due to the gripper jaw being open past its limits. The limits are dependant on joint index 5. 
+    *   2: The violation is due to the gripper jaw being open past its limits. The limits are dependant on joint index 5.
     */
   static int check_jnts(const Vectorq7x1& q_vec);
 
@@ -80,7 +84,7 @@ public:
   /**
    * @brief Get the value of a joint angle by name
    *
-   * 
+   *
    */
   static bool get_jnt_val_by_name(std::string jnt_name, sensor_msgs::JointState jointState, double &qval);
 
@@ -91,7 +95,7 @@ public:
 
   /**
    * @brief Given the full set of joint positions, compute the SE(3) transform of the  Provide joint angles and prismatic displacement (q_vec[2]) w/rt DaVinci coords
-   * 
+   *
    * will get translated to DH coords to solve fwd kin
    * return affine describing gripper pose w/rt base frame
    *
@@ -120,7 +124,7 @@ public:
    *
    * @param q_vec (optional) The robot joint positions. If empty, the current joints are used for computation.
    *
-   * @return a 6x6 Eigen Matrix. 
+   * @return a 6x6 Eigen Matrix.
    */
   Eigen::MatrixXd compute_jacobian(const Vectorq7x1& q_vec);
   Eigen::MatrixXd compute_jacobian();
@@ -146,11 +150,14 @@ public:
    */
   Eigen::Affine3d get_gripper_wrt_frame6() const;
 
+  Eigen::Affine3d get_wrist_wrt_base();
+  Eigen::Affine3d get_wrist_wrt_base(std::string kinematic_set_name);
+
   /**
    * @brief sets the transform from the joint frame 6 frame to the gripper frame.
    *
    * @param jaw_length the length of the gripper jaw.
-   * 
+   *
    * @return The transform between the joint frame 6 and the gripper frame.
    */
   void set_gripper_jaw_length(double jaw_length);
@@ -165,7 +172,29 @@ public:
     return gripper_jaw_length_;
   }
 
-protected:
+
+  // RN
+  // Added on 19/07/18 as Mk2 Upgrades.
+
+  Eigen::Affine3d fwd_kin_solve(const Vectorq7x1& q_vec, std::string kinematic_set_name);
+
+  bool loadDHyamlfiles(std::string yaml_name, std::string kenimatic_set_name);
+
+  void resetDhOffsetsMaps();
+
+  void resetDhGenericParams();
+
+  void printAllDhMaps();
+
+  Eigen::MatrixXd compute_jacobian(const Vectorq7x1& q_vec, std::string kinematic_set_name);
+
+// TODO make private later, it is put here to debug
+  std::map<std::string, double> j1_scale_factor_map_;
+  std::map<std::string, double> j2_scale_factor_map_;
+  std::map<std::string, double> j3_scale_factor_map_;
+
+
+ protected:
   /**
    * @brief The following function takes args of DH thetas and d's and returns an affine transformation
    *
@@ -197,10 +226,35 @@ protected:
   {
     return affine_frame0_wrt_base_.inverse() * affine_products_[i];
   };
+
+
+
+  // RN
+  Eigen::VectorXd theta_DH_offsets_generic_;
+  Eigen::VectorXd dval_DH_offsets_generic_;
+  Eigen::VectorXd DH_a_params_generic_;
+  Eigen::VectorXd DH_alpha_params_generic_;
+  double j1_scale_factor_generic_;
+  double j2_scale_factor_generic_;
+  double j3_scale_factor_generic_;
+  std::map<std::string, Eigen::VectorXd> theta_DH_offsets_map_;
+  std::map<std::string, Eigen::VectorXd> dval_DH_offsets_map_;
+  std::map<std::string, Eigen::VectorXd> DH_a_params_map_;
+  std::map<std::string, Eigen::VectorXd> DH_alpha_params_map_;
+
+
+  std::map<std::string, Vectorq7x1> current_joint_state__map_;
+  std::map<std::string, Eigen::MatrixXd> Jacobian_map_;
+
+  std::map<std::string, Eigen::Affine3d> affine_gripper_wrt_base_map_;
+  std::map<std::string, Eigen::Affine3d> affine_wrist_wrt_base_map_;
+  std::map<std::string, std::vector<Eigen::Affine3d>> affine_products_map_;
+
+
 private:
   /**
    * @brief Given a vector of joint states in DaVinci coords, convert these into
-   * equivalent DH parameters, theta and d 
+   * equivalent DH parameters, theta and d
    *
    * @param q_vec the vector of joint states.
    *
@@ -233,6 +287,35 @@ private:
    */
   double dh_var_to_qvec(double dh_val, int index);
 
+
+  // RN
+  // Added on 19/07/18 as Mk2 Upgrades.
+  // TODO refactor after functional tests
+
+
+
+
+
+  Vectorq7x1 convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec,
+                                     const Eigen::VectorXd &dvals_DH_vec,
+                                     std::string kinematic_set_name);
+
+  void convert_qvec_to_DH_vecs(const Vectorq7x1& q_vec,
+                               Eigen::VectorXd &thetas_DH_vec,
+                               Eigen::VectorXd &dvals_DH_vec,
+                               std::string kinematic_set_name);
+
+  void fwd_kin_solve_DH(const Eigen::VectorXd& theta_vec,
+                        const Eigen::VectorXd& d_vec,
+                        std::string kinematic_set_name);
+
+
+
+
+
+  std::string ros_pkg_path_;
+
+
   /**
    * @brief This is the internal joint state of the forward kinematics.
    */
@@ -240,7 +323,7 @@ private:
 
   /**
    * @brief This is the tranform aligning the robot with a world frame.
-   */ 
+   */
   Eigen::Affine3d affine_frame0_wrt_base_;
 
   /**
@@ -255,6 +338,8 @@ private:
    */
   Eigen::Affine3d affine_gripper_wrt_base_;
 
+  Eigen::Affine3d affine_wrist_wrt_base_;
+
   /**
    * @brief This is the list of transforms from the robot base to each joint.
    *
@@ -264,17 +349,20 @@ private:
 
   /**
    * @brief This is the list of theta offset values for the DaVinci DH joint parameters.
-   * 
+   *
    * Stored intrinsicaly as part of the dvrk kinematics
    */
   Eigen::VectorXd theta_DH_offsets_;
 
   /**
    * @brief This is the list of d offset values for the DaVinci DH joint parameters.
-   * 
+   *
    * Stored intrinsicaly as part of the dvrk kinematics
    */
   Eigen::VectorXd dval_DH_offsets_;
+
+
+
 
   /**
    * @brief The 6x6 Jacobian of the current joint positions, only computed when the compute_jacobian method is called.

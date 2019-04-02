@@ -1,0 +1,38 @@
+# 01
+# Note: Average result from 20180806 Group. The passive joint is tilted so that the base frame z is tilted for about 70 degrees. 
+# ---
+# DH_0 TO DH_1 FRAME
+theta_1: 3.141593 
+alpha_1: -1.5639015
+a_1: 0.00322
+d_1: 0.000000 
+
+# DH_1 TO DH_2 FRAME
+theta_2: 1.5989585
+alpha_2: -1.574802
+a_2: 0.000648
+d_2: 0.0010885
+
+# DH_2 TO DH_3 FRAME
+d_3: -0.0094045
+j3_scale_factor: 0.989672
+
+
+# 02
+# Note: Average result from 20180809 Group. The passive joint not tilted.
+# ---
+# DH_0 TO DH_1 FRAME
+theta_1: 3.141593
+alpha_1: -1.5655045
+a_1: 0.003839
+d_1: 0.000000 
+
+# DH_1 TO DH_2 FRAME
+theta_2: 1.5928065
+alpha_2: -1.575889
+a_2: 0.000337
+d_2: 0.001284
+
+# DH_2 TO DH_3 FRAME
+d_3: -0.0089265
+j3_scale_factor: 0.9894155

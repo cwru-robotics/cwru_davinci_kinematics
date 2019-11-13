@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 
   Eigen::Vector3d tip_from_FK, tip_from_FK_of_IK, tip_err;
   // note: with print-outs, takes about 45sec for 10,000 iterations, and got 0 errors
-  for (int itries = 0; itries < 10000; itries++)
+  for (int itries = 0; itries < 50; itries++)
   {
     dvrk_forward.gen_rand_legal_jnt_vals(q_vec);
 
@@ -74,5 +74,7 @@ int main(int argc, char **argv)
     }
   }
   printf("err_cnt = %d", err_cnt);
+
+  std::cout << "hello";
   return 0;
 }

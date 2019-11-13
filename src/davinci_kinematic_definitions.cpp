@@ -23,9 +23,14 @@ namespace davinci_kinematics
 {
 
 // origin0 coincident w/ origin1
-const double DH_a1 = 0.0;
-// axis z1,z2 intersect
-const double DH_a2 = 0.0;
+//const double DH_a1 = 0.005970; // RN 20180712A1 PSM1
+const double DH_a1 = 0.0; // RN 20180713 Experimental
+
+// axis z1,z2 (prismatic) intersect
+//const double DH_a2 =  0.001250 ; // RN 20180712A1 PSM1
+const double DH_a2 =  0.0; // RN 20180713 Experimental
+
+
 // axes z2 (prismatic) and z3 (shaft rot) intersect
 const double DH_a3 = 0.0;
 // axes z3 (shaft rot) and z4 (wrist bend) intersect
@@ -37,18 +42,26 @@ const double DH_a6 = 0.0;
 // not sure what to do with this one
 const double DH_a7 = 0.0;
 
-const double DH_d1 = 0.0;
-//  THIS IS VARIABLE
-const double DH_d2 = 0.0;
-const double DH_d3 = 0.0;
-const double DH_d4 = 0.0;
-const double DH_d5 = 0.0;
-const double DH_d6 = 0.0;
-const double DH_d7 = 0.0;
+// const double DH_d1 = 0.0;
+// //  THIS IS VARIABLE
+// const double DH_d2 = 0.0;
+// const double DH_d3 = 0.0;
+// const double DH_d4 = 0.0;
+// const double DH_d5 = 0.0;
+// const double DH_d6 = 0.0;
+// const double DH_d7 = 0.0;
 
 // robot.DH.alpha= '[-pi/2 0 -pi/2 pi/2 -pi/2 0]';
-const double DH_alpha1 = M_PI/2.0;
-const double DH_alpha2 = M_PI/2.0;
+
+
+const double DH_alpha1 = M_PI/2.0; // RN Experimental/Original
+//const double DH_alpha1 = -M_PI/2.0; // RN Experimental/New@1/3
+
+
+//const double DH_alpha2 =  1.562359; // RN 20180712A1 PSM1
+ const double DH_alpha2 = M_PI/2.0; // RN Experimental
+
+
 // prismatic axis is aligned with tool-shaft spin axis
 const double DH_alpha3 = 0.0;
 const double DH_alpha4 = M_PI/2.0;
@@ -69,8 +82,18 @@ const double cannula_short_length = .035;
 // must command this much displacement to get wrist-bend axis to intersect base origin
 const double insertion_offset = 0.0156;
 
-const double DH_q_offset0 = 0.0;
-const double DH_q_offset1 = M_PI/2.0;
+
+// THETAs
+
+//const double DH_q_offset0 = 0.0;
+// const double DH_q_offset0 = 3.141593; // RN 20180712A1 PSM1
+const double DH_q_offset0 = 0.0; // RN 20180713 Experimental/Original
+//const double DH_q_offset0 = M_PI; // RN 20180713 Experiental/New@2/3
+
+const double DH_q_offset1 = M_PI/2.0; // RN 20180713 Experimental/Original
+//const double DH_q_offset1 = -M_PI/2.0; // RN 20180713 Experimental/New@3/3
+
+
 // erdem IK tested, sign is negative. q3 should be larger than abs(insertion_offset)
 const double DH_q_offset2 = -insertion_offset;
 const double DH_q_offset3 = M_PI;
@@ -123,10 +146,10 @@ const double DH_a_params[7] =
   DH_a1, DH_a2, DH_a3, DH_a4, DH_a5, DH_a6, DH_a7
 };
 
-const double DH_d_params[7] =
-{
-  DH_d1, DH_d2, DH_d3, DH_d4, DH_d5, DH_d6, DH_d7
-};
+// const double DH_d_params[7] =
+// {
+//   DH_d1, DH_d2, DH_d3, DH_d4, DH_d5, DH_d6, DH_d7
+// };
 
 const double DH_alpha_params[7] =
 {

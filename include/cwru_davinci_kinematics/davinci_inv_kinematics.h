@@ -18,7 +18,7 @@
 
 
 /**
- * @brief The inverse kinematics class (derived from the forward kinematics class) is for 
+ * @brief The inverse kinematics class (derived from the forward kinematics class) is for
  * Computing an analytical inverse kinematics of the DaVinci robot.
  */
 
@@ -37,7 +37,8 @@
 
 namespace davinci_kinematics
 {
-class Inverse:private Forward
+// RN 20/07/18 It used to be private inheritance.
+class Inverse:public Forward
 {
 public:
   /**
@@ -62,7 +63,41 @@ public:
    * @return the number of solutions
    *
    */
+  
+  [[deprecated]]
   int  ik_solve(Eigen::Affine3d const& desired_hand_pose);
+
+  // RN
+  int ik_solve_refined(Eigen::Affine3d const& desired_hand_pose);
+  bool solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose, Eigen::VectorXd &q_ik);
+  int ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate);
+  int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose);
+  bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate, Eigen::VectorXd &q_ik);
+
+
+  int ik_solve(Eigen::Affine3d const& desired_hand_pose, std::string kinematic_set_name); // is this necessary?
+  int ik_solve_generic(Eigen::Affine3d const& desired_hand_pose);
+
+  int ik_solve_refined(Eigen::Affine3d const& desired_hand_pose,
+                       std::string kinematic_set_name);
+
+  bool solve_jacobian_ik(Eigen::Affine3d const& desired_hand_pose,
+                         Eigen::VectorXd &q_ik,
+                         std::string kinematic_set_name);
+
+  int ik_solve_frozen_refined(Eigen::Vector3d const& desired_tip_coordinate,
+                              std::string kinematic_set_name);
+
+  int ik_solve_frozen_refined(Eigen::Affine3d const& desired_hand_pose,
+                              std::string kinematic_set_name);
+
+  bool solve_jacobian_frozen_ik(Eigen::Vector3d const& desired_tip_coordinate,
+                                Eigen::VectorXd &q_ik,
+                                std::string kinematic_set_name);
+
+
+  void resetAllIkMaps();
+
 
   /**
    * @brief get the properly computed (and validated) solution.
@@ -72,6 +107,30 @@ public:
   Vectorq7x1 get_soln() const
   {
     return q_vec_soln_;
+  };
+
+  // RN
+  Vectorq7x1 get_soln_refined() const
+  {
+    return q_vec_soln_refined_;
+  };
+
+  // TODO why this cannot add const at the end like other functions?
+  Vectorq7x1 get_soln_refined(std::string kinematic_set_name)
+  {
+    return q_vec_soln_refined_map_[kinematic_set_name];
+  };
+
+
+  // RN
+  Vectorq7x1 get_soln_frozon_ik_refined() const
+  {
+    return q_vec_soln_frozon_ik_refined_;
+  };
+
+  Vectorq7x1 get_soln_frozon_ik_refined(std::string kinematic_set_name)
+  {
+    return q_vec_soln_frozon_ik_refined_map_[kinematic_set_name];
   };
 
   /**
@@ -97,10 +156,18 @@ public:
   using Forward::set_gripper_jaw_length;
 
 private:
+
+    bool debug_print = false;
+    bool debug_print_1 = false;
+
+
+
+//  Forward davinci_fwd_solver_;
+
   /**
    * @brief verifies that the proposed list of joint positions fit the hardware joint limits.
    *
-   * @param qvec A modifiable vector of joint angles. 
+   * @param qvec A modifiable vector of joint angles.
    *
    * @return true if the joints are within the hardware limits.
    */
@@ -123,7 +190,7 @@ private:
    * @brief Computes the forward kinematics using only the first 3 joints.
    *
    * debug fnc: compute FK of wrist pt from q123
-   * could have put this in IK instead... 
+   * could have put this in IK instead...
    *
    * @param q123 a vector of 3 joint angles. (joints 1-3)
    *
@@ -176,6 +243,16 @@ private:
   Vectorq7x1 q_vec_soln_;
 
   /**
+   * RN
+   */
+  Vectorq7x1 q_vec_soln_refined_;
+
+  /**
+   * RN
+   */
+  Vectorq7x1 q_vec_soln_frozon_ik_refined_;
+
+  /**
    * @brief The stored desired pose for which the inverse kinematics has been most recently completed
    */
   Eigen::Affine3d desired_hand_pose_;
@@ -185,8 +262,16 @@ private:
    */
   // double min_dist_O4_to_gripper_tip_;
 
+
+  std::map<std::string, Vectorq7x1> q_vec_soln_refined_map_;
+  std::map<std::string, Vectorq7x1> q_vec_soln_map_;
+  std::map<std::string, Vectorq7x1> q_vec_soln_frozon_ik_refined_map_;
+  std::map<std::string, Eigen::Affine3d> desired_hand_pose_map_; // is thie necessary?
+
   double err_l_;
   double err_r_;
+
+
 };
 
 }  // namespace davinci_kinematics

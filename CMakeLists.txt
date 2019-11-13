@@ -21,7 +21,9 @@ endif()
 
 add_definitions(${EIGEN_DEFINITIONS})
 
-find_package(catkin REQUIRED COMPONENTS roscpp roslint tf tf2 tf2_eigen)
+find_package(yaml-cpp REQUIRED)
+
+find_package(catkin REQUIRED COMPONENTS roscpp roslib roslint tf tf2 tf2_eigen)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
@@ -30,12 +32,13 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${catkin_INCLUDES}
   ${Eigen3_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIRS}
 )
 
 catkin_package(
 	DEPENDS ${Eigen3_DEP}
 	LIBRARIES davinci_kinematics
-	CATKIN_DEPENDS roscpp
+	CATKIN_DEPENDS roscpp roslib
 	INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
 )
 
@@ -46,6 +49,7 @@ add_library(davinci_kinematics src/davinci_fwd_kinematics.cpp src/davinci_inv_ki
 
 target_link_libraries(davinci_kinematics
   ${catkin_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
   davinci_kinematic_definitions
   )
 
@@ -76,6 +80,70 @@ target_link_libraries(ik_demo
   davinci_kinematic_definitions
   ${catkin_LIBRARIES}
 )
+
+add_executable(refined_ik_demo examples/davinci_ik_refined_test.cpp)
+
+target_link_libraries(refined_ik_demo
+  davinci_kinematics
+  davinci_kinematic_definitions
+  ${catkin_LIBRARIES}
+)
+
+
+add_executable(davinci_fwd_fix_trial examples/davinci_fwd_fix_trial.cpp)
+
+target_link_libraries(davinci_fwd_fix_trial
+  davinci_kinematics
+  davinci_kinematic_definitions
+  ${catkin_LIBRARIES}
+)
+
+add_executable(test_dh_params examples/test_dh_params.cpp)
+
+target_link_libraries(test_dh_params
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+
+add_executable(test_new_ik_err examples/test_new_ik_err.cpp)
+
+target_link_libraries(test_new_ik_err
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+
+add_executable(psm1_intrinsic_calibration_auxiliary examples/psm1_intrinsic_calibration_auxiliary.cpp)
+
+target_link_libraries(psm1_intrinsic_calibration_auxiliary
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+add_executable(psm2_intrinsic_calibration_auxiliary examples/psm2_intrinsic_calibration_auxiliary.cpp)
+
+target_link_libraries(psm2_intrinsic_calibration_auxiliary
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+
+add_executable(test_dh_345 examples/test_dh_345.cpp)
+
+target_link_libraries(test_dh_345
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
+
+add_executable(davinci_jacobian_test_rn examples/davinci_jacobian_test_rn.cpp)
+
+target_link_libraries(davinci_jacobian_test_rn
+        davinci_kinematics
+        davinci_kinematic_definitions
+        ${catkin_LIBRARIES}
+        )
 
 
 file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)

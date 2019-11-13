@@ -1,0 +1,42 @@
+# DH PARAMETER RECOMMENDATION
+
+# @Date: 20181216
+
+# ---
+# DH_0 TO DH_1 FRAME
+theta_1: 3.141593 
+alpha_1: -1.563973 
+a_1: 0.005242 
+d_1: 0.000000 
+
+# DH_1 TO DH_2 FRAME
+theta_2: -1.594066 
+alpha_2: 1.561244 
+a_2: 0.001256 
+d_2: -0.002774 
+
+# DH_2 TO DH_3 FRAME
+theta_3: 0.000000 
+alpha_3: 0.000000 
+a_3: 0.000000 
+d_3: -0.006613 
+
+# DH_3 TO DH_4 FRAME
+theta_4: 0.082924 
+alpha_4: -1.566707 
+a_4: 0.000282 
+d_4: -0.000059 
+
+# DH_4 TO DH_5 FRAME
+theta_5: -1.641312 
+alpha_5: -1.466286 
+a_5: 0.008469 
+d_5: -0.000272 
+
+# Scale Factors
+#j1_scale_factor: 1.00
+#j2_scale_factor: 0.98
+#j3_scale_factor: 0.99
+j1_scale_factor: 1.0
+j2_scale_factor: 0.9766
+j3_scale_factor: 0.988108

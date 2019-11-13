@@ -41,6 +41,8 @@ int main(int argc, char **argv)
   davinci_kinematics::Forward davinci_fwd_solver;
   Eigen::MatrixXd Jacobian;
 
+  Eigen::MatrixXd rn_test;
+
   Eigen::Vector3d dp_fk, dp_J, dp_err_vec;
   Eigen::Matrix3d R1, R2, dR;
   Eigen::Vector3d dphi_J, dphi_fk, dphi_err_vec;
@@ -60,7 +62,7 @@ int main(int argc, char **argv)
   // holders for FK computations
   Eigen::Affine3d affine_fk1, affine_fk2;
 
-  for (int itries = 0; itries < 10000; itries++)
+  for (int itries = 0; itries < 50; itries++) // used to be 10000
   {
     davinci_fwd_solver.gen_rand_legal_jnt_vals(q_vec1);
     std::cout << "using q_vec = " << q_vec1.transpose() << std::endl;
@@ -130,5 +132,10 @@ int main(int argc, char **argv)
     std::cout << "dphi err norm = " << phi_err << std::endl;
     // express as a normalized error (scalar)
     std::cout << "fractional error: "<< phi_err/(dphi_fk.norm()) << std::endl << std::endl;
+
+    std::cout << "The inverse of B is:\n" << Jacobian.inverse() << std::endl;
+    rn_test = Jacobian*Jacobian.inverse();
+    std::cout << "The B*inv(B):\n" << rn_test << std::endl;
+
   }
 }

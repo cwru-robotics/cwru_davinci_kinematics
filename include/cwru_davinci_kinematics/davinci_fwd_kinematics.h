@@ -104,18 +104,23 @@ public:
    * @return The full DaVinci SE(3) transform.
    */
   Eigen::Affine3d fwd_kin_solve(const Vectorq7x1& q_vec);
- Eigen::Affine3d fwd_kin_solve(const std::vector<double> q_vec){
-	Vectorq7x1 q;
-	q[0] = q_vec[0];
-	q[1] = q_vec[1];
-	q[2] = q_vec[2];
-	q[3] = q_vec[3];
-	q[4] = q_vec[4];
-	q[5] = q_vec[5];
-	q[6] = q_vec[6];
-	return fwd_kin_solve(q);
-}
-	
+
+  Eigen::Affine3d fwd_kin_solve(const std::vector<double> q_vec)
+  {
+    Vectorq7x1 q;
+    q[0] = q_vec[0];
+    q[1] = q_vec[1];
+    q[2] = q_vec[2];
+    q[3] = q_vec[3];
+    q[4] = q_vec[4];
+    q[5] = q_vec[5];
+    q[6] = q_vec[6];
+    return fwd_kin_solve(q);
+  }
+
+  Eigen::Affine3d fwd_kin_solve(const std::vector<double>& q_vec,
+                                std::string kinematic_set_name);
+
   Eigen::Affine3d fwd_kin_solve();
 
   /**

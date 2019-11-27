@@ -121,6 +121,13 @@ public:
     return q_vec_soln_refined_map_[kinematic_set_name];
   };
 
+  void get_soln_refined(std::string kinematic_set_name, std::vector<double>& in)
+  {
+    Vectorq7x1 tmp = get_soln_refined(kinematic_set_name);
+    for(std::size_t i = 0; i < in.size(); i++){
+      in[i] = tmp[i];
+    }
+  };
 
   // RN
   Vectorq7x1 get_soln_frozon_ik_refined() const

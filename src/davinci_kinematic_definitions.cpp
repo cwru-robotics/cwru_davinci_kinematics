@@ -107,13 +107,13 @@ const double deg2rad = M_PI/180.0;
 
 
 // deg2rad*45; //141; //51;
-const double DH_q_max0 = 1.0;
+const double DH_q_max0 = 1.5707;
 // deg2rad*45;
 const double DH_q_max1 = 0.7;
 // 0.5;
 const double DH_q_max2 = 0.23;
 // deg2rad*180;
-const double DH_q_max3 = 2.25;
+const double DH_q_max3 = 3.0485;
 // deg2rad*90;
 const double DH_q_max4 = 1.57;
 // deg2rad*90;
@@ -122,12 +122,12 @@ const double DH_q_max5 = 1.39;
 const double DH_q_max6 = 1.57;
 
 // -deg2rad*45; //51; //141;
-const double DH_q_min0 = -1.0;
+const double DH_q_min0 = -1.5707;
 // -deg2rad*45;
 const double DH_q_min1 = -0.7;
-const double DH_q_min2 =  0.01;
+const double DH_q_min2 =  0.05;
 // -deg2rad*180;
-const double DH_q_min3 = -2.25;
+const double DH_q_min3 = -3.0485;
 // -deg2rad*90;
 const double DH_q_min4 = -1.57;
 // -deg2rad*90;

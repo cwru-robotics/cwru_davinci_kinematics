@@ -706,6 +706,24 @@ void Forward::printAllDhMaps() {
 
 }
 
+Eigen::Affine3d Forward::fwd_kin_solve(const std::vector<double>& q_vec,
+                                       std::string kinematic_set_name)
+{
+  std::vector<double> tq = q_vec;
+  if(tq.size() == 6)
+  {
+    tq.push_back(0.0);
+  }
+  Vectorq7x1 q;
+  q[0] = tq[0];
+  q[1] = tq[1];
+  q[2] = tq[2];
+  q[3] = tq[3];
+  q[4] = tq[4];
+  q[5] = tq[5];
+  q[6] = tq[6];
+  return Forward::fwd_kin_solve(q, kinematic_set_name);
+}
 
 Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1& q_vec,
                                        std::string kinematic_set_name) {

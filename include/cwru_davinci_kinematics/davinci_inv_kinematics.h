@@ -124,7 +124,7 @@ public:
   void get_soln_refined(std::string kinematic_set_name, std::vector<double>& in)
   {
     Vectorq7x1 tmp = get_soln_refined(kinematic_set_name);
-    for(std::size_t i = 0; i < in.size(); i++){
+    for(std::size_t i = 0; i < in.size() - 1; i++){
       in[i] = tmp[i];
     }
   };

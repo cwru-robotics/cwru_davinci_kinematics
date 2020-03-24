@@ -27,7 +27,7 @@
  * https://github.com/jhu-dvrk/sawIntuitiveResearchKit/blob/master/share/psm-large-needle-driver.json
  *
  * The kinematic models used in this library are based on DH parameters rather than joint location/direction as defined in the URDF standard.
- * However, the joint limits are the same as in the .xarco model files located in https://github.com/cwru-robotics/cwru_davinci_geometry_models.
+ * However, the joint limits are the same as in the .xarco model files located in https://github.com/cwru-davinci/uv_geometry.
  */
 namespace davinci_kinematics
 {

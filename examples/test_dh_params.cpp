@@ -2,7 +2,6 @@
 // Created by william on 13/07/18.
 //
 
-
 #include <ctime>
 #include <iostream>
 #include <tf/transform_listener.h>
@@ -10,42 +9,36 @@
 #include <Eigen/Geometry>
 #include <sensor_msgs/JointState.h>
 
-#include <cwru_davinci_kinematics/davinci_inv_kinematics.h>
+#include <davinci_kinematics/davinci_inv_kinematics.h>
 
-
-
-
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 
 //  davinci_kinematics::Forward dvrk_forward;
-  davinci_kinematics::Inverse dvrk_inverse;
+	davinci_kinematics::Inverse dvrk_inverse;
 
-  Eigen::Affine3d affine_wrist_wrt_base, affine_gripper_wrt_base;
-  davinci_kinematics::Vectorq7x1 q_vec, q_vec_up, q_vec_bottom;
-  davinci_kinematics::Vectorq7x1 err_vec, q_vec_ik, q_vec_ik_refined, q_vec_frozen_ik_refined;
+	Eigen::Affine3d affine_wrist_wrt_base, affine_gripper_wrt_base;
+	davinci_kinematics::Vectorq7x1 q_vec, q_vec_up, q_vec_bottom;
+	davinci_kinematics::Vectorq7x1 err_vec, q_vec_ik, q_vec_ik_refined, q_vec_frozen_ik_refined;
 
-  ROS_WARN("Forward test:");
+	ROS_WARN("Forward test:");
 
-  q_vec(0) = 0;
-  q_vec(1) = 0;
-  q_vec(2) = 0.11;
-  q_vec(3) = 0;
-  q_vec(4) = 0;
-  q_vec(5) = 0;
-  q_vec(6) = 0;
+	q_vec(0) = 0;
+	q_vec(1) = 0;
+	q_vec(2) = 0.11;
+	q_vec(3) = 0;
+	q_vec(4) = 0;
+	q_vec(5) = 0;
+	q_vec(6) = 0;
 
-  std::cout << "q_vec#============INPUT=BY=USER============================" << ": " << std::endl;
-  std::cout << q_vec.transpose() << std::endl << std::endl;
+	std::cout << "q_vec#============INPUT=BY=USER============================" << ": " << std::endl;
+	std::cout << q_vec.transpose() << std::endl << std::endl;
 
-  affine_gripper_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec);
+	affine_gripper_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec);
 
-  std::cout << "q_vec#" << "fwd_kin_solve() --- affine_gripper_wrt_base.translation():" << std::endl;
-  std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
-  affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base();
-  std::cout << "affine_wrist_wrt_base: " << std::endl
-            << affine_wrist_wrt_base.translation().transpose() << std::endl;
-
+	std::cout << "q_vec#" << "fwd_kin_solve() --- affine_gripper_wrt_base.translation():" << std::endl;
+	std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
+	affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base();
+	std::cout << "affine_wrist_wrt_base: " << std::endl << affine_wrist_wrt_base.translation().transpose() << std::endl;
 
 //  ROS_WARN("Inverse Test:");
 //
@@ -58,11 +51,10 @@ int main(int argc, char **argv)
 //
 //  }
 
-
-  dvrk_inverse.resetDhOffsetsMaps();
-  dvrk_inverse.loadDHyamlfiles("psm1_dh","psm1_dh");
-  dvrk_inverse.loadDHyamlfiles("psm1_dh_sim","psm1_dh_sim");
-  dvrk_inverse.loadDHyamlfiles("psm_generic","psm_generic");
+	dvrk_inverse.resetDhOffsetsMaps();
+	dvrk_inverse.loadDHyamlfiles("psm1_dh", "psm1_dh");
+	dvrk_inverse.loadDHyamlfiles("psm1_dh_sim", "psm1_dh_sim");
+	dvrk_inverse.loadDHyamlfiles("psm_generic", "psm_generic");
 
 //  dvrk_forward.resetDhOffsetsMaps();
 //  dvrk_forward.loadDHyamlfiles("psm1_dh","psm1_dh");
@@ -76,7 +68,6 @@ int main(int argc, char **argv)
 //  std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
 //  std::cout << "Expect the see this different from the one that uses fwd_kin_solve(q_vec)." << std::endl;
 
-
 //  if (dvrk_inverse.ik_solve_refined(affine_gripper_wrt_base, "psm1_dh") > 0) {
 //
 //    q_vec_ik = dvrk_inverse.get_soln_refined("psm1_dh");
@@ -86,13 +77,11 @@ int main(int argc, char **argv)
 //
 //  }
 
-  affine_gripper_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec, "psm1_dh_sim");
-  std::cout << "q_vec_ik#" << "fwd_kin_solve() -psm1_dh_sim-- affine_gripper_wrt_base.translation():" << std::endl;
-  std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
-  affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base("psm1_dh_sim");
-  std::cout << "affine_wrist_wrt_base: " << std::endl
-            << affine_wrist_wrt_base.translation().transpose() << std::endl;
-
+	affine_gripper_wrt_base = dvrk_inverse.fwd_kin_solve(q_vec, "psm1_dh_sim");
+	std::cout << "q_vec_ik#" << "fwd_kin_solve() -psm1_dh_sim-- affine_gripper_wrt_base.translation():" << std::endl;
+	std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
+	affine_wrist_wrt_base = dvrk_inverse.get_wrist_wrt_base("psm1_dh_sim");
+	std::cout << "affine_wrist_wrt_base: " << std::endl << affine_wrist_wrt_base.translation().transpose() << std::endl;
 
 //  if (dvrk_inverse.ik_solve_frozen_refined(affine_gripper_wrt_base, "psm1_dh") > 0) {
 //
@@ -106,8 +95,5 @@ int main(int argc, char **argv)
 //  std::cout << "q_vec_ik#" << "fwd_kin_solve() --- affine_gripper_wrt_base.translation():" << std::endl;
 //  std::cout << affine_gripper_wrt_base.translation() << std::endl << std::endl;
 
-
-
-
-  return 1;
+	return 1;
 }

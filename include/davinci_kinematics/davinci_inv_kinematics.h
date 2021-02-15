@@ -26,6 +26,7 @@
 #define CWRU_DAVINCI_KINEMATICS_DAVINCI_INV_KINEMATICS_H
 
 
+#include <davinci_kinematics/davinci_fwd_kinematics.h>
 #include <vector>
 #include <Eigen/Eigen>
 #include <string>
@@ -33,7 +34,6 @@
 #include <tf/transform_listener.h>
 #include <sensor_msgs/JointState.h>
 
-#include <cwru_davinci_kinematics/davinci_fwd_kinematics.h>
 
 namespace davinci_kinematics
 {

@@ -137,15 +137,6 @@ target_link_libraries(test_dh_345
         ${catkin_LIBRARIES}
         )
 
-add_executable(davinci_jacobian_test_rn examples/davinci_jacobian_test_rn.cpp)
-
-target_link_libraries(davinci_jacobian_test_rn
-        davinci_kinematics
-        davinci_kinematic_definitions
-        ${catkin_LIBRARIES}
-        )
-
-
 file(GLOB_RECURSE SRC_FILES_CPP src/*.cpp)
 file(GLOB_RECURSE TEST_FILES_CPP test/*.cpp)
 file(GLOB_RECURSE INCLUDE_FILES_H include/*.h)

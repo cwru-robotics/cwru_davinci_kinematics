@@ -16,31 +16,29 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cwru_davinci_kinematics/davinci_kinematic_definitions.h>
+#include <davinci_kinematics/davinci_kinematic_definitions.h>
 #include <math.h>
 
-namespace davinci_kinematics
-{
+namespace davinci_kinematics {
 
 // origin0 coincident w/ origin1
 //const double DH_a1 = 0.005970; // RN 20180712A1 PSM1
-const double DH_a1 = 0.0; // RN 20180713 Experimental
+	const double DH_a1 = 0.0; // RN 20180713 Experimental
 
 // axis z1,z2 (prismatic) intersect
 //const double DH_a2 =  0.001250 ; // RN 20180712A1 PSM1
-const double DH_a2 =  0.0; // RN 20180713 Experimental
-
+	const double DH_a2 = 0.0; // RN 20180713 Experimental
 
 // axes z2 (prismatic) and z3 (shaft rot) intersect
-const double DH_a3 = 0.0;
+	const double DH_a3 = 0.0;
 // axes z3 (shaft rot) and z4 (wrist bend) intersect
-const double DH_a4 = 0.0;
+	const double DH_a4 = 0.0;
 // axes z4 (wrist bend) and z5 (gripper-jaw rot axis) do NOT intersect:
-const double DH_a5 = dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis;
+	const double DH_a5 = dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis;
 // define tool frame on jaw w/ z6 axis intersecting z5 axis
-const double DH_a6 = 0.0;
+	const double DH_a6 = 0.0;
 // not sure what to do with this one
-const double DH_a7 = 0.0;
+	const double DH_a7 = 0.0;
 
 // const double DH_d1 = 0.0;
 // //  THIS IS VARIABLE
@@ -53,122 +51,100 @@ const double DH_a7 = 0.0;
 
 // robot.DH.alpha= '[-pi/2 0 -pi/2 pi/2 -pi/2 0]';
 
-
-const double DH_alpha1 = M_PI/2.0; // RN Experimental/Original
+	const double DH_alpha1 = M_PI / 2.0; // RN Experimental/Original
 //const double DH_alpha1 = -M_PI/2.0; // RN Experimental/New@1/3
 
-
 //const double DH_alpha2 =  1.562359; // RN 20180712A1 PSM1
- const double DH_alpha2 = M_PI/2.0; // RN Experimental
-
+	const double DH_alpha2 = M_PI / 2.0; // RN Experimental
 
 // prismatic axis is aligned with tool-shaft spin axis
-const double DH_alpha3 = 0.0;
-const double DH_alpha4 = M_PI/2.0;
+	const double DH_alpha3 = 0.0;
+	const double DH_alpha4 = M_PI / 2.0;
 // offset from wrist bend to jaw bend axis--> alpha is defined -pi/2
-const double DH_alpha5 = -M_PI/2.0;
+	const double DH_alpha5 = -M_PI / 2.0;
 // choose gripper frame to have z-axis pointing along jaws
-const double DH_alpha6 = M_PI/2.0;
+	const double DH_alpha6 = M_PI / 2.0;
 // relevant only if treat jaws as separate links
-const double DH_alpha7 = 0.0;
+	const double DH_alpha7 = 0.0;
 
 // the long and short distance from the portal to the exit of the cannula.
-const double cannula_long_length = .078;
-const double cannula_short_length = .035;
+	const double cannula_long_length = .078;
+	const double cannula_short_length = .035;
 
 // q_Davinci vec: starts counting from 0; 0 displacement at model "home"
 // when model joint_states are all at displacement 0.0
 // use these offsets to convert to DH coords
 // must command this much displacement to get wrist-bend axis to intersect base origin
-const double insertion_offset = 0.0156;
-
+	const double insertion_offset = 0.0156;
 
 // THETAs
 
 //const double DH_q_offset0 = 0.0;
 // const double DH_q_offset0 = 3.141593; // RN 20180712A1 PSM1
-const double DH_q_offset0 = 0.0; // RN 20180713 Experimental/Original
+	const double DH_q_offset0 = 0.0; // RN 20180713 Experimental/Original
 //const double DH_q_offset0 = M_PI; // RN 20180713 Experiental/New@2/3
 
-const double DH_q_offset1 = M_PI/2.0; // RN 20180713 Experimental/Original
+	const double DH_q_offset1 = M_PI / 2.0; // RN 20180713 Experimental/Original
 //const double DH_q_offset1 = -M_PI/2.0; // RN 20180713 Experimental/New@3/3
 
-
 // erdem IK tested, sign is negative. q3 should be larger than abs(insertion_offset)
-const double DH_q_offset2 = -insertion_offset;
-const double DH_q_offset3 = M_PI;
-const double DH_q_offset4 = M_PI/2;
+	const double DH_q_offset2 = -insertion_offset;
+	const double DH_q_offset3 = M_PI;
+	const double DH_q_offset4 = M_PI / 2;
 // M_PI;
-const double DH_q_offset5 = M_PI/2;
+	const double DH_q_offset5 = M_PI / 2;
 // M_PI;
-const double DH_q_offset6 = 0.0;
+	const double DH_q_offset6 = 0.0;
 
-const double deg2rad = M_PI/180.0;
-
+	const double deg2rad = M_PI / 180.0;
 
 // deg2rad*45; //141; //51;
-const double DH_q_max0 = 1.5707;
+	const double DH_q_max0 = 1.5707;
 // deg2rad*45;
-const double DH_q_max1 = 0.7;
+	const double DH_q_max1 = 0.7;
 // 0.5;
-const double DH_q_max2 = 0.23;
+	const double DH_q_max2 = 0.23;
 // deg2rad*180;
-const double DH_q_max3 = 3.0485;
+	const double DH_q_max3 = 3.0485;
 // deg2rad*90;
-const double DH_q_max4 = 1.57;
+	const double DH_q_max4 = 1.57;
 // deg2rad*90;
-const double DH_q_max5 = 1.39;
+	const double DH_q_max5 = 1.39;
 // deg2rad*90;
-const double DH_q_max6 = 1.57;
+	const double DH_q_max6 = 1.57;
 
 // -deg2rad*45; //51; //141;
-const double DH_q_min0 = -1.5707;
+	const double DH_q_min0 = -1.5707;
 // -deg2rad*45;
-const double DH_q_min1 = -0.7;
-const double DH_q_min2 =  0.05;
+	const double DH_q_min1 = -0.7;
+	const double DH_q_min2 = 0.05;
 // -deg2rad*180;
-const double DH_q_min3 = -3.0485;
+	const double DH_q_min3 = -3.0485;
 // -deg2rad*90;
-const double DH_q_min4 = -1.57;
+	const double DH_q_min4 = -1.57;
 // -deg2rad*90;
-const double DH_q_min5 = -1.39;
+	const double DH_q_min5 = -1.39;
 // -deg2rad*90;
-const double DH_q_min6 = -1.57;
-
+	const double DH_q_min6 = -1.57;
 
 // derived external defs:
-const double dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis = 0.0091;
+	const double dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis = 0.0091;
 
-const double gripper_jaw_length = 0.0102;
+	const double gripper_jaw_length = 0.0102;
 
-const double DH_a_params[7] =
-{
-  DH_a1, DH_a2, DH_a3, DH_a4, DH_a5, DH_a6, DH_a7
-};
+	const double DH_a_params[7] = { DH_a1, DH_a2, DH_a3, DH_a4, DH_a5, DH_a6, DH_a7 };
 
 // const double DH_d_params[7] =
 // {
 //   DH_d1, DH_d2, DH_d3, DH_d4, DH_d5, DH_d6, DH_d7
 // };
 
-const double DH_alpha_params[7] =
-{
-  DH_alpha1, DH_alpha2, DH_alpha3, DH_alpha4, DH_alpha5, DH_alpha6, DH_alpha7
-};
+	const double DH_alpha_params[7] = { DH_alpha1, DH_alpha2, DH_alpha3, DH_alpha4, DH_alpha5, DH_alpha6, DH_alpha7 };
 
-const double DH_q_offsets[7] =
-{
-  DH_q_offset0, DH_q_offset1, DH_q_offset2, DH_q_offset3, DH_q_offset4, DH_q_offset5, DH_q_offset6
-};
+	const double DH_q_offsets[7] = { DH_q_offset0, DH_q_offset1, DH_q_offset2, DH_q_offset3, DH_q_offset4, DH_q_offset5, DH_q_offset6 };
 
-const double q_lower_limits[7] =
-{
-  DH_q_min0, DH_q_min1, DH_q_min2, DH_q_min3, DH_q_min4, DH_q_min5, DH_q_min6
-};
+	const double q_lower_limits[7] = { DH_q_min0, DH_q_min1, DH_q_min2, DH_q_min3, DH_q_min4, DH_q_min5, DH_q_min6 };
 
-const double q_upper_limits[7] =
-{
-  DH_q_max0, DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH_q_max5, DH_q_max6
-};
+	const double q_upper_limits[7] = { DH_q_max0, DH_q_max1, DH_q_max2, DH_q_max3, DH_q_max4, DH_q_max5, DH_q_max6 };
 
 }  // namespace davinci_kinematics

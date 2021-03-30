@@ -100,9 +100,10 @@ namespace davinci_kinematics {
 			 * @return The full DaVinci SE(3) transform.
 			 */
 			Eigen::Affine3d fwd_kin_solve(const Vectorq7x1 &q_vec, const unsigned int desired_joint = 7);
-			Eigen::Affine3d fwd_kin_solve(const std::vector<double> q_vec, const unsigned int desired_joint = 7);
+			Eigen::Affine3d fwd_kin_solve(const std::vector<double> &q_vec, const unsigned int desired_joint = 7);
 			Eigen::Affine3d fwd_kin_solve(const std::vector<double> &q_vec, std::string kinematic_set_name,
 					const unsigned int desired_joint = 7);
+			Eigen::Affine3d fwd_kin_solve(const sensor_msgs::JointState &jointStateMsg, const unsigned int desiredJoint = 7);
 			Eigen::Affine3d fwd_kin_solve();
 
 			/**

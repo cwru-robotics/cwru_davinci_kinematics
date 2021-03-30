@@ -18,8 +18,18 @@
 
 #include <davinci_kinematics/davinci_kinematic_definitions.h>
 #include <math.h>
+#include <map>
 
 namespace davinci_kinematics {
+	/*{ "PSM1_outer_yaw", "PSM1_outer_pitch", "PSM1_outer_insertion",
+	 "PSM1_outer_roll", "PSM1_outer_wrist_pitch", "PSM1_outer_wrist_yaw", "PSM1_jaw" };*/
+	const std::map<unsigned int, std::string> jointOrderToName = { { 0, "PSM1_outer_yaw" }, { 1, "PSM1_outer_pitch" },
+			{ 2, "PSM1_outer_insertion" }, { 3, "PSM1_outer_roll" }, { 4, "PSM1_outer_wrist_pitch" }, { 5, "PSM1_outer_wrist_yaw" },
+			{ 6, "PSM1_jaw" } };
+
+	const std::map<std::string, unsigned int> jointNameToOrder = { { "PSM1_outer_yaw", 0 }, { "PSM1_outer_pitch", 1 },
+			{ "PSM1_outer_insertion", 2 }, { "PSM1_outer_roll", 3 }, { "PSM1_outer_wrist_pitch", 4 }, { "PSM1_outer_wrist_yaw", 5 },
+			{ "PSM1_jaw", 6 } };
 
 // origin0 coincident w/ origin1
 //const double DH_a1 = 0.005970; // RN 20180712A1 PSM1

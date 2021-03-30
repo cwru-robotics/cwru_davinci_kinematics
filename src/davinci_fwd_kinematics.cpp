@@ -189,18 +189,17 @@ namespace davinci_kinematics {
 	void Forward::fwd_kin_solve_DH(const Eigen::VectorXd &theta_vec, const Eigen::VectorXd &d_vec) {
 		// use or affect these member variables:
 
-		std::vector<Eigen::Affine3d> affines_i_wrt_iminus1;
-		affines_i_wrt_iminus1.resize(7);
-		Eigen::Affine3d xform;
+		std::vector<Eigen::Affine3d> affines_i_wrt_iminus1(7);
+		Eigen::Affine3d transform;
 		double a, d, theta, alpha;
 
 		for (int i = 0; i < 7; i++) {
-			a = DH_a_params[i];
+			a = davinci_kinematics::DH_a_params[i];
 			d = d_vec(i);
-			alpha = DH_alpha_params[i];
+			alpha = davinci_kinematics::DH_alpha_params[i];
 			theta = theta_vec(i);
-			xform = computeAffineOfDH(a, d, alpha, theta);
-			affines_i_wrt_iminus1[i] = xform;
+			transform = computeAffineOfDH(a, d, alpha, theta);
+			affines_i_wrt_iminus1[i] = transform;
 		}
 
 		this->affine_products_.resize(7);
@@ -239,7 +238,7 @@ namespace davinci_kinematics {
 		}
 	}
 
-	Eigen::Affine3d Forward::fwd_kin_solve(const std::vector<double> q_vec, const unsigned int desired_joint) {
+	Eigen::Affine3d Forward::fwd_kin_solve(const std::vector<double> &q_vec, const unsigned int desired_joint) {
 		Vectorq7x1 q;
 		q[0] = q_vec[0];
 		q[1] = q_vec[1];
@@ -249,6 +248,19 @@ namespace davinci_kinematics {
 		q[5] = q_vec[5];
 		q[6] = q_vec[6];
 		return this->fwd_kin_solve(q, desired_joint);
+	}
+
+	Eigen::Affine3d Forward::fwd_kin_solve(const sensor_msgs::JointState &jointStateMsg, const unsigned int desiredJoint) {
+
+		//TODO:  Add error checking to ensure jointStateMsg has proper values
+		Vectorq7x1 q;
+
+		for (unsigned int i = 0; i < jointStateMsg.name.size(); i++) {
+			unsigned int position = davinci_kinematics::jointNameToOrder.find(jointStateMsg.name[i])->second;
+			q[position] = jointStateMsg.position[i];
+		}
+
+		return this->fwd_kin_solve(q, desiredJoint);
 	}
 
 	Eigen::Affine3d Forward::fwd_kin_solve() {
@@ -319,7 +331,7 @@ namespace davinci_kinematics {
 		return this->Jacobian_;
 	}
 
-	// gen_rand_legal_jnt_vals: compute random values within legal joint range:
+// gen_rand_legal_jnt_vals: compute random values within legal joint range:
 	void Forward::gen_rand_legal_jnt_vals(Vectorq7x1 &qvec) {
 		qvec(6) = 0;
 		double drand_val;
@@ -330,7 +342,7 @@ namespace davinci_kinematics {
 		}
 	}
 
-	// TODO
+// TODO
 	bool Forward::loadDHyamlfiles(std::string yaml_name, std::string kinematic_set_name) {
 
 		std::string psm_yaml_path;

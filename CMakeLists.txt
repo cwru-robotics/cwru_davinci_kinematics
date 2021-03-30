@@ -37,7 +37,7 @@ include_directories(
 
 catkin_package(
 	DEPENDS ${Eigen3_DEP}
-	LIBRARIES davinci_kinematics
+	LIBRARIES davinci_kinematics davinci_kinematic_definitions
 	CATKIN_DEPENDS roscpp roslib
 	INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
 )
@@ -46,14 +46,13 @@ catkin_package(
 # Libraries
 
 add_library(davinci_kinematics src/davinci_fwd_kinematics.cpp src/davinci_inv_kinematics.cpp)
+add_library(davinci_kinematic_definitions src/davinci_kinematic_definitions.cpp)
 
 target_link_libraries(davinci_kinematics
   ${catkin_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
   davinci_kinematic_definitions
   )
-
-add_library(davinci_kinematic_definitions src/davinci_kinematic_definitions.cpp)
 
 
 # Examples

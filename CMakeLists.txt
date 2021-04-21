@@ -27,6 +27,20 @@ find_package(catkin REQUIRED COMPONENTS roscpp roslib roslint tf tf2 tf2_eigen)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
+# https://stackoverflow.com/questions/25748039/add-cuda-to-ros-package
+find_package(CUDA)
+ 
+message(STATUS "CUDA_FOUND=${CUDA_FOUND}")
+if(CUDA_FOUND)
+	message(STATUS "Found CUDA, building additional libraries")
+	
+	# set CUDA_NVCC_FLAGS as you would do with CXX/C FLAGS         
+	set(CUDA_NVCC_FLAGS CACHE STRING "nvcc flags" FORCE)
+	set(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CURAND_FLAGS} -fPIC")
+	set(CUDA_SEPARABLE_COMPILATION ON)
+endif()
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -35,12 +49,25 @@ include_directories(
   ${YAML_CPP_INCLUDE_DIRS}
 )
 
-catkin_package(
-	DEPENDS ${Eigen3_DEP}
-	LIBRARIES davinci_kinematics davinci_kinematic_definitions
-	CATKIN_DEPENDS roscpp roslib
-	INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
-)
+if (CUDA_FOUND)
+	catkin_package(
+		DEPENDS ${Eigen3_DEP}
+		LIBRARIES 
+			davinci_kinematics 
+			davinci_kinematic_definitions 
+			davinci_kinematics_cuda 
+			davinci_kinematics_definitions_cuda
+		CATKIN_DEPENDS roscpp roslib
+		INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
+	)
+else()
+	catkin_package(
+		DEPENDS ${Eigen3_DEP}
+		LIBRARIES davinci_kinematics davinci_kinematic_definitions
+		CATKIN_DEPENDS roscpp roslib
+		INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
+	)
+endif()
 
 
 # Libraries
@@ -54,6 +81,15 @@ target_link_libraries(davinci_kinematics
   davinci_kinematic_definitions
   )
 
+if (CUDA_FOUND)
+	cuda_add_library(davinci_kinematics_cuda src/davinci_fwd_kinematics.cu)
+	cuda_add_library(davinci_kinematics_definitions_cuda src/davinci_kinematic_definitions.cu)
+	
+	target_link_libraries(davinci_kinematics_cuda
+		${catkin_LIBRARIES}
+		davinci_kinematics_definitions_cuda
+	)
+endif()
 
 # Examples
 

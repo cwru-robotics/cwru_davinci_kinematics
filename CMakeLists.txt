@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.10)
 project(cwru_davinci_kinematics)
 
 #This is needed as part of the migration to ros jade and later
@@ -22,21 +22,20 @@ endif()
 add_definitions(${EIGEN_DEFINITIONS})
 
 find_package(yaml-cpp REQUIRED)
-
 find_package(catkin REQUIRED COMPONENTS roscpp roslib roslint tf tf2 tf2_eigen)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
 # https://stackoverflow.com/questions/25748039/add-cuda-to-ros-package
-find_package(CUDA)
- 
+find_package(CUDA) 
 message(STATUS "CUDA_FOUND=${CUDA_FOUND}")
 if(CUDA_FOUND)
-	message(STATUS "Found CUDA, building additional libraries")
+	message(STATUS "Found CUDA, setting nvcc compilation flags")
 	
 	# set CUDA_NVCC_FLAGS as you would do with CXX/C FLAGS         
 	set(CUDA_NVCC_FLAGS CACHE STRING "nvcc flags" FORCE)
 	set(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+	# fPIC fixes some linker issues with nvcc code / objects
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CURAND_FLAGS} -fPIC")
 	set(CUDA_SEPARABLE_COMPILATION ON)
 endif()
@@ -63,7 +62,9 @@ if (CUDA_FOUND)
 else()
 	catkin_package(
 		DEPENDS ${Eigen3_DEP}
-		LIBRARIES davinci_kinematics davinci_kinematic_definitions
+		LIBRARIES 
+			davinci_kinematics 
+			davinci_kinematic_definitions
 		CATKIN_DEPENDS roscpp roslib
 		INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
 	)

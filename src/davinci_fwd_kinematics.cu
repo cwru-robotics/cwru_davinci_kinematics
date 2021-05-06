@@ -22,6 +22,7 @@
 namespace davinci_kinematics_cuda {
 	
 	// use member fncs to compute and multiply successive transforms
+	__host__ __device__
 	Forward::Forward() {
 		// affine describing frame0 w/rt base frame
 		Eigen::Matrix3d R_0_wrt_base;
@@ -79,6 +80,7 @@ namespace davinci_kinematics_cuda {
 
 	// given a vector of joint states in DaVinci coords, convert these into
 	// equivalent DH parameters, theta and d
+	__host__ __device__
 	void Forward::convert_qvec_to_DH_vecs(const Vectorq7x1 &q_vec, Eigen::VectorXd &thetas_DH_vec, Eigen::VectorXd &dvals_DH_vec) {
 		thetas_DH_vec.resize(7);
 		// +? -?
@@ -95,6 +97,7 @@ namespace davinci_kinematics_cuda {
 		dvals_DH_vec(2) += q_vec(2); // RN original
 	}
 
+	__host__ __device__
 	int Forward::check_jnts(const Vectorq7x1 &q_vec) {
 		int result(0);
 		for (int i(0); i < 6; i++) {
@@ -121,12 +124,14 @@ namespace davinci_kinematics_cuda {
 		return 0;
 	}
 
+	__host__ __device__
 	double Forward::dh_var_to_qvec(double dh_val, int index) {
 		return (dh_val - davinci_kinematics_cuda::DH_q_offsets[index]);
 	}
 
 	// RN TODO deal with that .99 sacle factor
 	//    Eigen::VectorXd thetas_DH_vec_,dvals_DH_vec_;
+	__host__ __device__
 	Vectorq7x1 Forward::convert_DH_vecs_to_qvec(const Eigen::VectorXd &thetas_DH_vec, const Eigen::VectorXd &dvals_DH_vec) {
 		Vectorq7x1 q_vec;
 
@@ -139,6 +144,7 @@ namespace davinci_kinematics_cuda {
 	}
 
 	// given 4 DH parameters, compute the corresponding transform as an affine3d
+	__host__ __device__
 	Eigen::Affine3d Forward::computeAffineOfDH(double a, double d, double alpha, double theta) {
 		Eigen::Affine3d affine_DH;
 		Eigen::Matrix3d R;
@@ -175,6 +181,7 @@ namespace davinci_kinematics_cuda {
 
 	// provide DH theta and d values, return affine pose of gripper tip w/rt base frame
 	// also computes all intermediate affine frames, w/rt base frame
+	__host__ __device__
 	void Forward::fwd_kin_solve_DH(const Eigen::VectorXd &theta_vec, const Eigen::VectorXd &d_vec) {
 		// use or affect these member variables:
 
@@ -203,11 +210,13 @@ namespace davinci_kinematics_cuda {
 		this->affine_wrist_wrt_base_ = this->affine_products_[2];
 	}
 
+	__host__ __device__
 	Eigen::Affine3d Forward::get_wrist_wrt_base() // RN
 	{
 		return this->affine_wrist_wrt_base_;
 	}
-
+	
+	__host__ __device__
 	Eigen::Affine3d Forward::fwd_kin_solve(const Vectorq7x1 &q_vec, const unsigned int desired_joint) {
 		unsigned int joint = desired_joint - 1;
 		this->current_joint_state_ = q_vec;
@@ -222,6 +231,7 @@ namespace davinci_kinematics_cuda {
 		}
 	}
 
+	__host__ __device__
 	Eigen::Affine3d Forward::fwd_kin_solve(const double *q_vec, const unsigned int desired_joint) {
 		Vectorq7x1 q;
 		q[0] = q_vec[0];
@@ -248,27 +258,33 @@ namespace davinci_kinematics_cuda {
 		return this->fwd_kin_solve(q, desiredJoint);
 	}*/
 
+	__host__ __device__
 	Eigen::Affine3d Forward::fwd_kin_solve() {
 		return this->affine_gripper_wrt_base_;
 	}
 
+	__host__ __device__
 	Eigen::Affine3d Forward::get_frame0_wrt_base() const {
 		return this->affine_frame0_wrt_base_;
 	}
 
+	__host__ __device__
 	void Forward::set_frame0_wrt_base(const Eigen::Affine3d &affine_frame0_wrt_base) {
 		this->affine_frame0_wrt_base_ = affine_frame0_wrt_base;
 	}
 
+	__host__ __device__
 	Eigen::Affine3d Forward::get_gripper_wrt_frame6() const {
 		return this->affine_gripper_wrt_frame6_;
 	}
 
+	__host__ __device__
 	void Forward::set_gripper_jaw_length(double jaw_length) {
 		this->gripper_jaw_length_ = jaw_length;
 		this->affine_gripper_wrt_frame6_ = computeAffineOfDH(0, this->gripper_jaw_length_, 0, -davinci_kinematics_cuda::PI / 2);
 	}
 
+	__host__ __device__
 	Eigen::MatrixXd Forward::compute_jacobian(const Vectorq7x1 &q_vec) {
 		// use the jacobian to make the computation.
 		fwd_kin_solve(q_vec);
@@ -312,10 +328,12 @@ namespace davinci_kinematics_cuda {
 		return this->Jacobian_;
 	}
 
+	__host__ __device__
 	Eigen::MatrixXd Forward::compute_jacobian() {
 		return this->Jacobian_;
 	}
 
+	__host__ __device__
 	void Forward::resetDhGenericParams() {
 		this->theta_DH_offsets_generic_.resize(7);
 		this->dval_DH_offsets_generic_.resize(7);

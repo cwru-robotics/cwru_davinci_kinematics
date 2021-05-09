@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.10)
+cmake_minimum_required(VERSION 3.18)
 project(cwru_davinci_kinematics)
 
 #This is needed as part of the migration to ros jade and later
@@ -26,18 +26,15 @@ find_package(catkin REQUIRED COMPONENTS roscpp roslib roslint tf tf2 tf2_eigen)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 
-# https://stackoverflow.com/questions/25748039/add-cuda-to-ros-package
-find_package(CUDA) 
-message(STATUS "CUDA_FOUND=${CUDA_FOUND}")
-if(CUDA_FOUND)
-	message(STATUS "Found CUDA, setting nvcc compilation flags")
-	
-	# set CUDA_NVCC_FLAGS as you would do with CXX/C FLAGS         
-	set(CUDA_NVCC_FLAGS CACHE STRING "nvcc flags" FORCE)
-	set(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+include(CheckLanguage)
+check_language(CUDA)
+if(CMAKE_CUDA_COMPILER)
+	enable_language(CUDA)
 	# fPIC fixes some linker issues with nvcc code / objects
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CURAND_FLAGS} -fPIC")
-	set(CUDA_SEPARABLE_COMPILATION ON)
+		set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -fPIC")
+		set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
+		
+	find_package(CUDAToolkit REQUIRED)
 endif()
 
 include_directories(
@@ -48,7 +45,7 @@ include_directories(
   ${YAML_CPP_INCLUDE_DIRS}
 )
 
-if (CUDA_FOUND)
+if (CMAKE_CUDA_COMPILER)
 	catkin_package(
 		DEPENDS ${Eigen3_DEP}
 		LIBRARIES 
@@ -82,13 +79,16 @@ target_link_libraries(davinci_kinematics
   davinci_kinematic_definitions
   )
 
-if (CUDA_FOUND)
-	cuda_add_library(davinci_kinematics_cuda src/davinci_fwd_kinematics.cu)
-	cuda_add_library(davinci_kinematics_definitions_cuda src/davinci_kinematic_definitions.cu)
+if (CMAKE_CUDA_COMPILER)
+	add_library(davinci_kinematics_cuda STATIC src/davinci_fwd_kinematics.cu)
+	add_library(davinci_kinematics_definitions_cuda STATIC src/davinci_kinematic_definitions.cu)
 	
-	target_link_libraries(davinci_kinematics_cuda
-		${catkin_LIBRARIES}
-		davinci_kinematics_definitions_cuda
+	target_link_libraries(
+		davinci_kinematics_cuda
+		PRIVATE
+			CUDA::curand
+			${catkin_LIBRARIES}
+			davinci_kinematics_definitions_cuda
 	)
 endif()
 

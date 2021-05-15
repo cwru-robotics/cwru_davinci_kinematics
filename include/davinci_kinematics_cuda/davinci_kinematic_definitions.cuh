@@ -35,37 +35,64 @@
  */
 namespace davinci_kinematics_cuda
 {
-	const double PI = 3.14159265358979323846;
-
-	__constant__
-	const double cannula_long_length = .078;
+	//this defines the constants for the device
+	#ifdef __CUDA_ARCH__
+		__constant__
+		const double PI = 3.14159265358979323846;
 	
-	__constant__
-	const double cannula_short_length = .035;
-
-	__constant__
-	const double insertion_offset = 0.0156;
+		__constant__
+		const double cannula_long_length = .078;
+		
+		__constant__
+		const double cannula_short_length = .035;
 	
-	__constant__
-	const double dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis = 0.0091;
-
-	__constant__
-	const double gripper_jaw_length = 0.0102;
-
-	__constant__
-	const double DH_a_params[7] = { 0.0, 0.0, 0.0, 0.0, dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis, 0.0, 0.0 };
-
-	__constant__
-	const double DH_alpha_params[7] = { PI/2.0, PI/2.0, 0.0, PI/2.0, -PI/2.0, PI/2.0, 0.0 };
-
-	__constant__
-	const double DH_q_offsets[7] = { 0.0, PI/2.0, -insertion_offset, PI, PI/2.0, PI/2.0, 0.0 };
-
-	__constant__
-	const double q_lower_limits[7] = { -PI/2.0, -0.7, 0.05, -3.0485, -PI/2.0, -1.39, -PI/2.0 };
-
-	__constant__
-	const double q_upper_limits[7] = { PI/2.0, 0.7, 0.23, 3.0485, PI/2.0, 1.39, PI/2.0 };
+		__constant__
+		const double insertion_offset = 0.0156;
+		
+		__constant__
+		const double dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis = 0.0091;
+	
+		__constant__
+		const double gripper_jaw_length = 0.0102;
+	
+		__constant__
+		const double DH_a_params[7] = { 0.0, 0.0, 0.0, 0.0, dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis, 0.0, 0.0 };
+	
+		__constant__
+		const double DH_alpha_params[7] = { PI/2.0, PI/2.0, 0.0, PI/2.0, -PI/2.0, PI/2.0, 0.0 };
+	
+		__constant__
+		const double DH_q_offsets[7] = { 0.0, PI/2.0, -insertion_offset, PI, PI/2.0, PI/2.0, 0.0 };
+	
+		__constant__
+		const double q_lower_limits[7] = { -PI/2.0, -0.7, 0.05, -3.0485, -PI/2.0, -1.39, -PI/2.0 };
+	
+		__constant__
+		const double q_upper_limits[7] = { PI/2.0, 0.7, 0.23, 3.0485, PI/2.0, 1.39, PI/2.0 };
+	// this defines the constants for the host
+	#else
+		const double PI = 3.14159265358979323846;
+	
+		const double cannula_long_length = .078;
+		
+		const double cannula_short_length = .035;
+	
+		const double insertion_offset = 0.0156;
+		
+		const double dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis = 0.0091;
+	
+		const double gripper_jaw_length = 0.0102;
+	
+		const double DH_a_params[7] = { 0.0, 0.0, 0.0, 0.0, dist_from_wrist_bend_axis_to_gripper_jaw_rot_axis, 0.0, 0.0 };
+	
+		const double DH_alpha_params[7] = { PI/2.0, PI/2.0, 0.0, PI/2.0, -PI/2.0, PI/2.0, 0.0 };
+	
+		const double DH_q_offsets[7] = { 0.0, PI/2.0, -insertion_offset, PI, PI/2.0, PI/2.0, 0.0 };
+	
+		const double q_lower_limits[7] = { -PI/2.0, -0.7, 0.05, -3.0485, -PI/2.0, -1.39, -PI/2.0 };
+	
+		const double q_upper_limits[7] = { PI/2.0, 0.7, 0.23, 3.0485, PI/2.0, 1.39, PI/2.0 };		
+	#endif
 
 }  // namespace davinci_kinematics
 

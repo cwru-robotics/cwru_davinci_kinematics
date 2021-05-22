@@ -31,7 +31,7 @@ check_language(CUDA)
 if(CMAKE_CUDA_COMPILER)
 	enable_language(CUDA)
 	# fPIC fixes some linker issues with nvcc code / objects
-		set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -fPIC")
+		set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -fPIC --expt-relaxed-constexpr")
 		set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 		
 	find_package(CUDAToolkit REQUIRED)

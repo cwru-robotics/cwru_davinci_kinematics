@@ -22,6 +22,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+#include <map>
 
 /**
  * @brief This list of constants are used for completing both the forward and inverse kinematic evaluation of a
@@ -35,6 +36,14 @@
  */
 namespace davinci_kinematics_cuda
 {
+	const std::map<unsigned int, std::string> jointOrderToName = { { 0, "PSM1_outer_yaw" }, { 1, "PSM1_outer_pitch" },
+			{ 2, "PSM1_outer_insertion" }, { 3, "PSM1_outer_roll" }, { 4, "PSM1_outer_wrist_pitch" }, { 5, "PSM1_outer_wrist_yaw" },
+			{ 6, "PSM1_jaw" } };
+
+	const std::map<std::string, unsigned int> jointNameToOrder = { { "PSM1_outer_yaw", 0 }, { "PSM1_outer_pitch", 1 },
+			{ "PSM1_outer_insertion", 2 }, { "PSM1_outer_roll", 3 }, { "PSM1_outer_wrist_pitch", 4 }, { "PSM1_outer_wrist_yaw", 5 },
+			{ "PSM1_jaw", 6 } };
+	
 	//this defines the constants for the device
 	#ifdef __CUDA_ARCH__
 		__constant__
